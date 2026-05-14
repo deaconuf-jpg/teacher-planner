@@ -1,0 +1,2377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Teacher Planner</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --border: #e4e7ec;
+    --border-strong: #cdd2da;
+    --text: #111827;
+    --muted: #6b7280;
+    --muted-2: #9aa1ad;
+    --accent: #2563eb;
+    --accent-soft: #eaf1ff;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --danger-soft: #fef2f2;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+    --radius: 8px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  /* ---- Header ---- */
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .brand .dot {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 12px;
+  }
+  .brand .sub { color: var(--muted); font-weight: 500; font-size: 12px; }
+  .topbar-actions { display: flex; gap: 6px; align-items: center; }
+  .week-nav {
+    display: flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel);
+    padding: 2px;
+  }
+  .week-nav button {
+    background: transparent;
+    border: none;
+    padding: 5px 9px;
+    cursor: pointer;
+    color: var(--muted);
+    border-radius: 5px;
+    font-size: 13px;
+  }
+  .week-nav button:hover { background: #f1f3f6; color: var(--text); }
+  .week-nav .week-label {
+    padding: 4px 10px;
+    font-weight: 600;
+    font-size: 12.5px;
+    min-width: 195px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  button.btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 11px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .12s, border-color .12s;
+  }
+  button.btn:hover { background: #f1f3f6; }
+  button.btn.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  button.btn.primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+  button.btn.danger {
+    color: var(--danger);
+    border-color: #f3c8c8;
+  }
+  button.btn.danger:hover { background: var(--danger-soft); }
+  button.btn.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+  button.btn.ghost:hover { background: #f1f3f6; color: var(--text); }
+  .icon-btn {
+    width: 26px; height: 26px;
+    border: none; background: transparent;
+    border-radius: 5px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--muted-2);
+  }
+  .icon-btn:hover { background: #f1f3f6; color: var(--text); }
+
+  /* ---- Layout ---- */
+  main.layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 14px;
+    padding: 14px 18px 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1100px) {
+    main.layout { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-header h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
+  }
+  .panel-header .meta { font-size: 12px; color: var(--muted); }
+
+  /* ---- Schedule grid ---- */
+  .grid-wrap { padding: 0; overflow: auto; }
+  table.schedule {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 720px;
+  }
+  table.schedule th, table.schedule td {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.schedule th:last-child, table.schedule td:last-child { border-right: none; }
+  table.schedule thead th {
+    background: #fafbfc;
+    font-weight: 600;
+    font-size: 11.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 8px 10px;
+    text-align: left;
+    position: sticky; top: 0;
+    z-index: 2;
+  }
+  table.schedule thead th .day-num {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+    margin-left: 6px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  table.schedule thead th.today {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  table.schedule thead th.today .day-num { color: var(--accent); }
+  table.schedule td.period-col {
+    width: 110px;
+    background: #fafbfc;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .period-name { font-weight: 600; color: var(--text); }
+  .period-time { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  td.cell {
+    padding: 0;
+    height: 86px;
+    cursor: pointer;
+    position: relative;
+    transition: background .1s;
+    border-left: 3px solid transparent;
+  }
+  td.cell:hover { background: #fbfbfd; }
+  td.cell.today { background: #fcfdff; }
+  td.cell.has-class { border-left-color: var(--cell-color, var(--muted-2)); }
+  td.cell.cell-dragging { opacity: .35; }
+  td.cell.cell-drop-target {
+    background: var(--accent-soft) !important;
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  td.cell .cell-override-dot {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--panel);
+  }
+  .cell-inner {
+    padding: 7px 9px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+  }
+  .cell-class {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text);
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cell-class .swatch {
+    width: 8px; height: 8px; border-radius: 2px;
+    flex-shrink: 0;
+    background: var(--muted-2);
+  }
+  .cell-topic {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.35;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .cell-hw {
+    margin-top: auto;
+    font-size: 10.5px;
+    color: var(--warning);
+    font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .cell-empty { color: var(--muted-2); font-size: 12px; font-style: italic; }
+
+  /* ---- Tasks panel ---- */
+  .task-controls {
+    display: flex; gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    font-size: 11.5px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .filter-chip.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .filter-chip .count {
+    margin-left: 4px;
+    font-variant-numeric: tabular-nums;
+    opacity: .8;
+    font-size: 11px;
+  }
+  .task-add {
+    display: flex; gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .task-add input[type="text"] {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 9px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  .task-add input[type="text"]:focus,
+  .task-add input[type="date"]:focus,
+  .task-add select:focus,
+  .modal input:focus, .modal select:focus, .modal textarea:focus {
+    outline: 2px solid var(--accent-soft);
+    outline-offset: 0;
+    border-color: var(--accent);
+  }
+  .task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .task-list:empty::after {
+    content: "No tasks. Add one above ↑";
+    display: block;
+    color: var(--muted-2);
+    text-align: center;
+    padding: 30px 10px;
+    font-size: 12px;
+    font-style: italic;
+  }
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .task-item:hover { background: #fbfbfd; }
+  .task-item input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    width: 14px; height: 14px;
+  }
+  .task-body { flex: 1; min-width: 0; }
+  .task-title {
+    font-size: 13px;
+    color: var(--text);
+    word-wrap: break-word;
+  }
+  .task-item.done .task-title {
+    text-decoration: line-through;
+    color: var(--muted-2);
+  }
+  .task-meta {
+    margin-top: 3px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .task-meta .pill {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #f1f3f6;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .task-meta .pill.due-today { background: #fff7e6; color: #b45309; font-weight: 600; }
+  .task-meta .pill.due-overdue {
+    background: var(--danger);
+    color: #fff;
+    font-weight: 600;
+  }
+  .task-meta .pill.class-pill {
+    border: 1px solid currentColor;
+    background: transparent;
+    font-weight: 600;
+  }
+  .task-meta .pill.priority-high { background: #fef2f2; color: var(--danger); }
+  .task-meta .pill.priority-med { background: #fffbeb; color: #b45309; }
+  .task-meta .pill.priority-low { background: #ecfdf5; color: #047857; }
+  .task-item .task-del { opacity: 0; }
+  .task-item:hover .task-del { opacity: 1; }
+
+  /* ---- Modal ---- */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, .35);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--panel);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.18);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    max-height: 90vh;
+  }
+  .modal-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-head h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .modal-head .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .modal-body {
+    padding: 14px 18px;
+    overflow-y: auto;
+  }
+  .modal-foot {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+    background: #fafbfc;
+  }
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .field input[type="text"],
+  .field input[type="date"],
+  .field input[type="time"],
+  .field select,
+  .field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+  }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row > .field { flex: 1; }
+
+  /* ---- Settings panel ---- */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .periods-table, .classes-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+  }
+  .periods-table th, .classes-table th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .periods-table td, .classes-table td {
+    padding: 4px;
+  }
+  .periods-table input, .classes-table input {
+    width: 100%;
+    border: 1px solid var(--border);
+    padding: 5px 7px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  .swatch-input {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .swatch-input input[type="color"] {
+    width: 26px; height: 26px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px;
+    cursor: pointer;
+  }
+  .drag-handle {
+    cursor: grab;
+    color: var(--muted-2);
+    user-select: none;
+    text-align: center;
+    width: 22px;
+    font-size: 14px;
+    line-height: 1;
+    padding: 4px 0 !important;
+  }
+  .drag-handle:hover { color: var(--muted); }
+  .drag-handle:active { cursor: grabbing; }
+  tr.dragging { opacity: .4; }
+  tr.drag-over-top td { box-shadow: 0 -2px 0 var(--accent) inset; }
+  tr.drag-over-bottom td { box-shadow: 0 2px 0 var(--accent) inset; }
+  .schedule-edit-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    margin-top: 10px;
+  }
+  .schedule-edit-table th, .schedule-edit-table td {
+    border: 1px solid var(--border);
+    padding: 4px;
+  }
+  .schedule-edit-table th {
+    background: #fafbfc;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .schedule-edit-table select {
+    width: 100%;
+    border: none;
+    padding: 4px;
+    background: transparent;
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .help { color: var(--muted); font-size: 11.5px; margin: 4px 0 10px; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #d6dae0; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #b9bfc9; }
+
+  /* Sticky tasks panel on desktop */
+  @media (min-width: 1101px) {
+    #tasksPanel {
+      position: sticky;
+      top: 60px;
+      align-self: start;
+      max-height: calc(100vh - 80px);
+      display: flex;
+      flex-direction: column;
+    }
+    #tasksPanel .task-list { flex: 1; max-height: none; }
+  }
+
+  /* Clickable week label */
+  .week-label-btn {
+    background: transparent;
+    border: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 12.5px;
+    min-width: 195px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .week-label-btn:hover { background: #f1f3f6; }
+  /* Hidden helper for date jump */
+  .date-jump {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px; height: 1px;
+  }
+
+  /* Week-nav extras */
+  .week-nav .divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    margin: 0 2px;
+  }
+
+  /* Toast */
+  .toast-stack {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .toast {
+    background: #111827;
+    color: white;
+    font-size: 12.5px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .18s ease, transform .18s ease;
+    pointer-events: auto;
+    max-width: 80vw;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: #065f46; }
+  .toast.error { background: #991b1b; }
+  .toast .undo {
+    margin-left: 10px;
+    background: transparent;
+    border: none;
+    color: #93c5fd;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+    padding: 0;
+  }
+
+  /* Keyboard hint chip */
+  kbd {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    background: #f1f3f6;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--muted);
+  }
+  .keyboard-hint {
+    color: var(--muted-2);
+    font-size: 11px;
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  /* Settings auto-save label */
+  .autosave-tag {
+    color: var(--muted-2);
+    font-size: 11.5px;
+    margin-right: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .autosave-tag::before {
+    content: "";
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+  }
+
+  /* Settings panel: nested table/forms tweaks */
+  .periods-table tr.dragging,
+  .classes-table tr.dragging { opacity: .4; }
+
+  /* Backups list */
+  #snapshotsList {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .snapshot-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+  }
+  .snapshot-row:last-child { border-bottom: none; }
+  .snapshot-row:hover { background: #fafbfc; }
+  .snapshot-time { font-weight: 600; color: var(--text); }
+  .snapshot-meta { color: var(--muted-2); font-size: 11px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .snapshots-empty {
+    padding: 14px;
+    color: var(--muted-2);
+    font-style: italic;
+    font-size: 12.5px;
+    text-align: center;
+  }
+
+  /* Linked backup file */
+  .bf-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12.5px;
+    margin-bottom: 12px;
+  }
+  .bf-row.bf-disconnected { background: #fffbeb; border-color: #fde68a; }
+  .bf-row.bf-connected    { background: #ecfdf5; border-color: #a7f3d0; }
+  .bf-row.bf-unsupported  { background: #fafbfc; color: var(--muted); font-style: italic; }
+  .bf-name { font-weight: 600; }
+  .bf-name code {
+    background: rgba(0,0,0,.05);
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 11.5px;
+  }
+  .bf-meta { color: var(--muted); margin-top: 3px; line-height: 1.4; }
+
+  /* ---- Print ---- */
+  @media print {
+    body { background: white; }
+    header.topbar, #tasksPanel, .toast-stack, .modal-backdrop { display: none !important; }
+    main.layout {
+      display: block;
+      padding: 0;
+      max-width: none;
+    }
+    #schedulePanel {
+      box-shadow: none;
+      border: none;
+      page-break-inside: avoid;
+    }
+    .panel-header { border-bottom: 2px solid #000; }
+    .panel-header h2::after {
+      content: " — " attr(data-print-week);
+      color: #555;
+      font-weight: 500;
+    }
+    table.schedule { font-size: 10.5px; min-width: 0; }
+    table.schedule th, table.schedule td {
+      border: 1px solid #999 !important;
+    }
+    td.cell { height: 70px; cursor: default; border-left-width: 4px !important; }
+    .cell-empty { display: none; }
+    td.cell .cell-override-dot { display: none; }
+    .cell-hw { color: #b45309 !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="dot">TP</span>
+    <div>
+      <div>Teacher Planner</div>
+      <div class="sub" id="userTag">Middle / High School</div>
+    </div>
+  </div>
+  <div class="week-nav">
+    <button id="weekPrev" title="Previous week (←)">‹</button>
+    <button id="weekToday" title="Jump to this week (T)">Today</button>
+    <button class="week-label-btn" id="weekLabel" title="Click to jump to a date">—</button>
+    <input type="date" id="weekDateJump" class="date-jump" tabindex="-1" aria-hidden="true" />
+    <button id="weekNext" title="Next week (→)">›</button>
+    <span class="divider"></span>
+    <button id="copyWeekBtn" title="Duplicate this week's lessons to next week" style="font-size:12px;">⧉ Copy → next</button>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn ghost" id="printBtn" title="Print this week">⎙ Print</button>
+    <button class="btn ghost" id="settingsBtn">⚙ Settings</button>
+    <button class="btn" id="exportBtn">↓ Export</button>
+    <button class="btn" id="importBtn">↑ Import</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" />
+  </div>
+</header>
+
+<main class="layout">
+  <!-- Schedule -->
+  <section class="panel" id="schedulePanel">
+    <div class="panel-header">
+      <h2>Weekly Schedule</h2>
+      <span class="meta" id="scheduleMeta">Click any cell to plan a lesson</span>
+    </div>
+    <div class="grid-wrap">
+      <table class="schedule" id="scheduleTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Tasks -->
+  <section class="panel" id="tasksPanel">
+    <div class="panel-header">
+      <h2>To-Do</h2>
+      <span class="meta" id="tasksMeta">0 tasks</span>
+    </div>
+    <div class="task-controls" id="taskFilters"></div>
+    <form class="task-add" id="taskAddForm" autocomplete="off">
+      <input type="text" id="newTaskTitle" placeholder="New task… (e.g. Grade Ch.4 quizzes)" required />
+      <input type="date" id="newTaskDue" title="Due date" />
+      <select id="newTaskPriority" title="Priority">
+        <option value="low">Low</option>
+        <option value="med" selected>Med</option>
+        <option value="high">High</option>
+      </select>
+      <select id="newTaskClass" title="Link to a class (optional)">
+        <option value="">— No class —</option>
+      </select>
+      <button type="submit" class="btn primary">+ Add</button>
+    </form>
+    <ul class="task-list" id="taskList"></ul>
+    <div class="keyboard-hint">
+      <kbd>←</kbd> <kbd>→</kbd> weeks · <kbd>T</kbd> today · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> save · drag a cell to swap, <kbd>Ctrl</kbd>+drag to copy
+    </div>
+  </section>
+</main>
+
+<!-- Lesson modal -->
+<div class="modal-backdrop" id="lessonModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="lessonTitle">Lesson</h3>
+        <div class="sub" id="lessonSub"></div>
+      </div>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Class</label>
+        <select id="lessonClass"></select>
+      </div>
+      <div class="field">
+        <label>Topic / Lesson</label>
+        <input type="text" id="lessonTopic" placeholder="e.g. Quadratic equations: completing the square" />
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="lessonNotes" placeholder="Materials, objectives, room changes…"></textarea>
+      </div>
+      <div class="field">
+        <label>Homework / Assignment</label>
+        <input type="text" id="lessonHw" placeholder="e.g. Worksheet 4.2, problems 1–15" />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn danger" id="lessonClear">Delete lesson</button>
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn primary" id="lessonSave">Save lesson <kbd style="margin-left:4px;background:rgba(255,255,255,.2);border-color:transparent;color:#dbeafe;">Ctrl+↵</kbd></button>
+    </div>
+  </div>
+</div>
+
+<!-- Task edit modal -->
+<div class="modal-backdrop" id="taskModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Edit task</h3>
+      </div>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="editTaskTitle" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Due</label>
+          <input type="date" id="editTaskDue" />
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <select id="editTaskPriority">
+            <option value="low">Low</option>
+            <option value="med">Med</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Linked class</label>
+        <select id="editTaskClass">
+          <option value="">— No class —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="editTaskNotes"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn danger" id="editTaskDelete">Delete</button>
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn primary" id="editTaskSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal" style="max-width: 720px;">
+    <div class="modal-head">
+      <div>
+        <h3>Settings</h3>
+        <div class="sub">Configure your periods, classes, and recurring weekly schedule.</div>
+      </div>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom: 14px;">
+        <label>Header subtitle</label>
+        <input type="text" id="subtitleInput" placeholder="e.g. Middle / High School · Math Department" />
+      </div>
+      <hr style="margin:14px 0; border:none; border-top:1px solid var(--border);">
+      <div class="settings-grid">
+        <div>
+          <label style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Periods</label>
+          <p class="help">The bell schedule. Add or remove rows.</p>
+          <table class="periods-table">
+            <thead><tr><th>Name</th><th style="width:70px">Start</th><th style="width:70px">End</th><th style="width:30px"></th></tr></thead>
+            <tbody id="periodsBody"></tbody>
+          </table>
+          <button class="btn ghost" id="addPeriodBtn" style="margin-top:6px;">+ Add period</button>
+        </div>
+        <div>
+          <label style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Classes</label>
+          <p class="help">The courses you teach. Pick a color for the dot.</p>
+          <table class="classes-table">
+            <thead><tr><th style="width:22px"></th><th>Color</th><th>Class name</th><th style="width:30px"></th></tr></thead>
+            <tbody id="classesBody"></tbody>
+          </table>
+          <button class="btn ghost" id="addClassBtn" style="margin-top:6px;">+ Add class</button>
+        </div>
+      </div>
+      <hr style="margin:18px 0;border:none;border-top:1px solid var(--border);">
+      <label style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Recurring weekly schedule</label>
+      <p class="help">Assign a class to each period × day. This becomes the default for every week. You can override individual lessons by clicking a cell on the main schedule.</p>
+      <div style="overflow-x:auto;">
+        <table class="schedule-edit-table" id="recurringTable"></table>
+      </div>
+
+      <hr style="margin:18px 0;border:none;border-top:1px solid var(--border);">
+      <label style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Linked backup file</label>
+      <p class="help">An always-on copy of your planner saved to a real file on disk. Pick a <code>.json</code> location once (ideally inside a OneDrive / iCloud Drive / Google Drive folder so it syncs off-machine) and every change is mirrored there silently.</p>
+      <div id="backupFileStatus"></div>
+
+      <label style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted); margin-top: 8px; display:block;">Snapshot history (in this browser)</label>
+      <p class="help">Auto-saved a few seconds after each change. The last 20 versions are kept here in your browser only. Use Restore to roll back a bad edit.</p>
+      <div id="snapshotsList"></div>
+    </div>
+    <div class="modal-foot">
+      <span class="autosave-tag">Saved automatically</span>
+      <button class="btn primary" data-close>Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   Teacher Planner
+   ============================================================ */
+
+const STORAGE_KEY = 'teacherPlanner.v1';
+const SEEDED_KEY = STORAGE_KEY + '.seeded';
+const SNAPSHOTS_KEY = STORAGE_KEY + '.snapshots';
+const MAX_SNAPSHOTS = 20;
+const SNAPSHOT_DEBOUNCE_MS = 5000; // batch a flurry of edits into one snapshot
+
+// Linked backup file (File System Access API)
+const HANDLE_DB_NAME = 'teacherPlannerHandles';
+const HANDLE_DB_STORE = 'handles';
+const HANDLE_KEY = 'backupFile';
+const FS_DEBOUNCE_MS = 2000;
+const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
+const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+
+// Class-override sentinels. lesson.classOverride is one of:
+//   undefined / null / ''  → INHERIT from the recurring schedule
+//   CLASS_FREE             → explicit free period (overrides any recurring class)
+//   any other string       → that class's id
+// CLASS_DEFAULT is only used as a select-option value in the lesson modal,
+// representing "revert to recurring default"; it never lands in stored data.
+const CLASS_FREE = '__none__';
+const CLASS_DEFAULT = '__default__';
+
+/* ---------- Default state ---------- */
+function defaultState() {
+  return {
+    settings: {
+      subtitle: 'Middle / High School',
+      periods: [
+        { id: 'p1', name: 'Period 1', start: '08:00', end: '08:50' },
+        { id: 'p2', name: 'Period 2', start: '08:55', end: '09:45' },
+        { id: 'p3', name: 'Period 3', start: '09:50', end: '10:40' },
+        { id: 'p4', name: 'Period 4', start: '10:45', end: '11:35' },
+        { id: 'p5', name: 'Lunch',    start: '11:35', end: '12:15' },
+        { id: 'p6', name: 'Period 5', start: '12:20', end: '13:10' },
+        { id: 'p7', name: 'Period 6', start: '13:15', end: '14:05' },
+        { id: 'p8', name: 'Period 7', start: '14:10', end: '15:00' },
+      ],
+      classes: [
+        { id: 'c1', name: 'Algebra II',   color: '#2563eb' },
+        { id: 'c2', name: 'Geometry',     color: '#10b981' },
+        { id: 'c3', name: 'Pre-Calculus', color: '#f59e0b' },
+        { id: 'c4', name: 'Prep / Free',  color: '#9aa1ad' },
+      ],
+      // recurring[periodId][dayIdx] = classId
+      recurring: {},
+    },
+    // lessons[YYYY-MM-DD][periodId] = { topic, notes, hw, classOverride }
+    lessons: {},
+    tasks: [], // {id, title, notes, due, priority, done, created}
+  };
+}
+
+/* ---------- State load / save ---------- */
+let state;
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      state = JSON.parse(raw);
+      // backfill defaults if missing
+      const def = defaultState();
+      state.settings = state.settings || def.settings;
+      state.settings.periods = state.settings.periods || def.settings.periods;
+      state.settings.classes = state.settings.classes || def.settings.classes;
+      state.settings.recurring = state.settings.recurring || {};
+      if (state.settings.subtitle == null) state.settings.subtitle = def.settings.subtitle;
+      state.lessons = state.lessons || {};
+      state.tasks = state.tasks || [];
+      return;
+    }
+  } catch(e) { console.warn('load failed', e); }
+  state = defaultState();
+}
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e) { console.warn('save failed', e); }
+}
+
+/* ---------- Date helpers ---------- */
+function startOfWeek(d) {
+  const date = new Date(d);
+  const day = date.getDay(); // 0=Sun
+  const diff = (day === 0 ? -6 : 1 - day); // back up to Monday
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+function fmtISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function fmtRange(a, b) {
+  const opts = { month: 'short', day: 'numeric' };
+  const sameMonth = a.getMonth() === b.getMonth();
+  const sameYear = a.getFullYear() === b.getFullYear();
+  if (sameMonth && sameYear) {
+    return `${a.toLocaleDateString(undefined,{month:'short'})} ${a.getDate()} – ${b.getDate()}, ${a.getFullYear()}`;
+  }
+  return `${a.toLocaleDateString(undefined,opts)} – ${b.toLocaleDateString(undefined,opts)}, ${b.getFullYear()}`;
+}
+function isToday(d) {
+  const t = new Date();
+  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+}
+
+/* ---------- Current week ---------- */
+let currentWeekStart = startOfWeek(new Date());
+
+/* ---------- Toasts ---------- */
+function toast(msg, opts = {}) {
+  const stack = document.getElementById('toastStack');
+  if (!stack) return;
+  const el = document.createElement('div');
+  el.className = 'toast' + (opts.kind ? ' ' + opts.kind : '');
+  el.textContent = msg;
+  if (opts.undo && typeof opts.onUndo === 'function') {
+    const btn = document.createElement('button');
+    btn.className = 'undo';
+    btn.textContent = 'Undo';
+    btn.addEventListener('click', () => {
+      opts.onUndo();
+      hide();
+    });
+    el.appendChild(btn);
+  }
+  stack.appendChild(el);
+  // animate in
+  requestAnimationFrame(() => el.classList.add('show'));
+  let timer;
+  const hide = () => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 200);
+    clearTimeout(timer);
+  };
+  timer = setTimeout(hide, opts.duration || (opts.undo ? 5000 : 2200));
+}
+
+/* ---------- Lesson copy/move helpers ---------- */
+function cloneLesson(l) { return l ? JSON.parse(JSON.stringify(l)) : null; }
+function getLesson(dateKey, periodId) {
+  return state.lessons[dateKey] && state.lessons[dateKey][periodId];
+}
+function setLesson(dateKey, periodId, lesson) {
+  if (lesson == null) {
+    if (state.lessons[dateKey]) {
+      delete state.lessons[dateKey][periodId];
+      if (Object.keys(state.lessons[dateKey]).length === 0) delete state.lessons[dateKey];
+    }
+  } else {
+    if (!state.lessons[dateKey]) state.lessons[dateKey] = {};
+    state.lessons[dateKey][periodId] = lesson;
+  }
+}
+function lessonIsEmpty(l) {
+  if (!l) return true;
+  return !l.topic && !l.notes && !l.hw && !l.classOverride;
+}
+
+/* ---------- Class resolution ---------- */
+// Read-only accessors so the rest of the code never inspects the override sentinel directly.
+function getRecurringClassId(periodId, dayIdx) {
+  const row = state.settings.recurring[periodId];
+  return (row && row[dayIdx]) || null;
+}
+function getEffectiveClassId(lesson, periodId, dayIdx) {
+  if (lesson && lesson.classOverride === CLASS_FREE) return null;
+  if (lesson && lesson.classOverride) return lesson.classOverride;
+  return getRecurringClassId(periodId, dayIdx);
+}
+function isExplicitFree(lesson) {
+  return !!lesson && lesson.classOverride === CLASS_FREE;
+}
+// Translate a lesson-modal dropdown value into the value that should land in storage.
+// Pass the recurring class id for this slot so picking that same class collapses
+// to "inherit" rather than redundantly storing an override.
+function normalizeOverride(selectValue, recurringClassId) {
+  if (selectValue === CLASS_FREE) return recurringClassId ? CLASS_FREE : '';
+  if (!selectValue || selectValue === CLASS_DEFAULT) return '';
+  if (selectValue === recurringClassId) return '';
+  return selectValue;
+}
+
+/* ---------- Central commit ---------- */
+// All state writes funnel through here so we can never forget to save() or re-render.
+// commit(mutator, opts) → runs mutator, persists to localStorage, then re-renders the
+// surfaces named in opts. By default only the schedule re-renders; pass tasks:true /
+// settings:true to additionally re-render those.
+function commit(mutator, opts = {}) {
+  const { schedule = true, tasks = false, settings = false } = opts;
+  if (typeof mutator === 'function') mutator();
+  save();
+  if (schedule) renderSchedule();
+  if (tasks) renderTasks();
+  if (settings) openSettings();
+  scheduleSnapshot();
+  scheduleFsBackup();
+}
+
+/* ---------- Auto-snapshot history ----------
+   Every commit schedules a snapshot 5s later (timer resets on each new commit, so
+   bursts of edits collapse into one snapshot). We keep up to MAX_SNAPSHOTS in
+   localStorage under SNAPSHOTS_KEY. Restore from the Backups list in Settings.
+   This protects against bad imports, accidental deletions, settings mishaps, etc.
+   It does NOT protect against losing the browser data itself — for that, export
+   periodically or use the File System Access "linked backup" feature (TBD). */
+let snapshotTimer = null;
+function scheduleSnapshot() {
+  clearTimeout(snapshotTimer);
+  snapshotTimer = setTimeout(takeSnapshot, SNAPSHOT_DEBOUNCE_MS);
+}
+function loadSnapshots() {
+  try {
+    const raw = localStorage.getItem(SNAPSHOTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) { return []; }
+}
+function writeSnapshots(list) {
+  // Try to save; if quota exceeded, drop oldest until it fits or list is empty.
+  while (list.length > 0) {
+    try {
+      localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list));
+      return true;
+    } catch (_) {
+      list.pop();
+    }
+  }
+  return false;
+}
+function takeSnapshot() {
+  try {
+    const list = loadSnapshots();
+    const currentJson = JSON.stringify(state);
+    // Skip if no change since the most recent snapshot.
+    if (list.length && list[0].data === currentJson) return;
+    list.unshift({ at: Date.now(), data: currentJson });
+    while (list.length > MAX_SNAPSHOTS) list.pop();
+    writeSnapshots(list);
+  } catch (e) {
+    console.warn('snapshot failed', e);
+  }
+  // If the Backups list is currently visible, refresh it.
+  if (document.getElementById('settingsModal').classList.contains('show')) {
+    renderSnapshotsList();
+  }
+}
+function restoreSnapshot(at) {
+  const snap = loadSnapshots().find(s => s.at === at);
+  if (!snap) return;
+  let restored;
+  try { restored = JSON.parse(snap.data); }
+  catch (_) { toast('That backup is corrupted — skipping.', { kind: 'error' }); return; }
+  const before = JSON.parse(JSON.stringify(state));
+  commit(() => {
+    state = restored;
+    sortPeriodsChronologically();
+  }, { tasks: true, settings: true });
+  toast(`Restored backup from ${formatRelative(at)}`, {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => { state = before; }, { tasks: true, settings: true });
+    },
+  });
+}
+function formatRelative(ts) {
+  const diff = Date.now() - ts;
+  const sec = Math.floor(diff / 1000);
+  if (sec < 30)   return 'just now';
+  if (sec < 60)   return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60)   return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24)    return `${hr} hour${hr === 1 ? '' : 's'} ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7)    return `${day} day${day === 1 ? '' : 's'} ago`;
+  return new Date(ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+function formatBytes(n) {
+  if (n < 1024) return n + ' B';
+  return (n / 1024).toFixed(1) + ' KB';
+}
+function renderSnapshotsList() {
+  const root = document.getElementById('snapshotsList');
+  if (!root) return;
+  const list = loadSnapshots();
+  if (list.length === 0) {
+    root.innerHTML = `<div class="snapshots-empty">No backups yet — the first one appears about ${SNAPSHOT_DEBOUNCE_MS / 1000} seconds after your next change.</div>`;
+    return;
+  }
+  root.innerHTML = list.map(s => `
+    <div class="snapshot-row">
+      <div>
+        <div class="snapshot-time">${formatRelative(s.at)}</div>
+        <div class="snapshot-meta">${formatBytes(s.data.length)} · ${new Date(s.at).toLocaleString()}</div>
+      </div>
+      <button class="btn ghost" data-at="${s.at}">Restore</button>
+    </div>
+  `).join('');
+  root.querySelectorAll('button[data-at]').forEach(btn => {
+    btn.addEventListener('click', () => restoreSnapshot(parseInt(btn.dataset.at, 10)));
+  });
+}
+
+/* ---------- Linked backup file (File System Access API) ----------
+   User picks a JSON file once via the system save dialog. The handle is stored in
+   IndexedDB so it survives reloads. After that, every commit silently writes the
+   current state to that file (debounced, like snapshots). Best when the chosen
+   file lives inside a OneDrive/iCloud/Drive-synced folder so the backup is also
+   off-machine. Only supported on Chromium browsers (Chrome / Edge / Opera /
+   Brave). On Firefox/Safari the UI shows an "unsupported" message instead. */
+let backupFileHandle = null;
+let lastFsBackupAt = null;
+let fsBackupTimer = null;
+const fsSupported = typeof window !== 'undefined' && 'showSaveFilePicker' in window;
+
+function openHandleDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(HANDLE_DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(HANDLE_DB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function loadStoredHandle() {
+  if (!fsSupported) return null;
+  try {
+    const db = await openHandleDB();
+    return await new Promise(resolve => {
+      const tx = db.transaction(HANDLE_DB_STORE, 'readonly');
+      const req = tx.objectStore(HANDLE_DB_STORE).get(HANDLE_KEY);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror   = () => resolve(null);
+    });
+  } catch (_) { return null; }
+}
+async function saveHandle(handle) {
+  try {
+    const db = await openHandleDB();
+    await new Promise(resolve => {
+      const tx = db.transaction(HANDLE_DB_STORE, 'readwrite');
+      tx.objectStore(HANDLE_DB_STORE).put(handle, HANDLE_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror    = () => resolve();
+    });
+  } catch (_) {}
+}
+async function clearStoredHandle() {
+  try {
+    const db = await openHandleDB();
+    await new Promise(resolve => {
+      const tx = db.transaction(HANDLE_DB_STORE, 'readwrite');
+      tx.objectStore(HANDLE_DB_STORE).delete(HANDLE_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror    = () => resolve();
+    });
+  } catch (_) {}
+}
+async function ensureWritePermission(handle) {
+  if (!handle || !handle.queryPermission) return false;
+  let perm = await handle.queryPermission({ mode: 'readwrite' });
+  if (perm === 'granted') return true;
+  perm = await handle.requestPermission({ mode: 'readwrite' });
+  return perm === 'granted';
+}
+async function writeBackupFile(opts = {}) {
+  if (!backupFileHandle) return;
+  const interactive = opts.interactive !== false;
+  try {
+    let granted;
+    if (interactive) {
+      granted = await ensureWritePermission(backupFileHandle);
+    } else {
+      // Quietly check; never prompt. If permission isn't already granted, skip.
+      const perm = await backupFileHandle.queryPermission({ mode: 'readwrite' });
+      granted = (perm === 'granted');
+    }
+    if (!granted) {
+      renderBackupStatus();
+      return;
+    }
+    const writable = await backupFileHandle.createWritable();
+    await writable.write(JSON.stringify(state, null, 2));
+    await writable.close();
+    lastFsBackupAt = Date.now();
+    renderBackupStatus();
+  } catch (e) {
+    console.warn('backup write failed', e);
+    if (interactive) toast('Backup file write failed: ' + e.message, { kind: 'error', duration: 4000 });
+    renderBackupStatus();
+  }
+}
+function scheduleFsBackup() {
+  if (!backupFileHandle) return;
+  clearTimeout(fsBackupTimer);
+  // Quiet write (no permission prompt); the user grants once via the connect/write-now buttons.
+  fsBackupTimer = setTimeout(() => writeBackupFile({ interactive: false }), FS_DEBOUNCE_MS);
+}
+async function connectBackupFile() {
+  if (!fsSupported) {
+    toast('Linked backup needs Chrome, Edge, or Opera (your browser doesn\'t support it).', { kind: 'error', duration: 5000 });
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'teacher-planner-backup.json',
+      types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }],
+    });
+    backupFileHandle = handle;
+    await saveHandle(handle);
+    await writeBackupFile({ interactive: true });
+    toast(`Linked: ${handle.name}`, { kind: 'success' });
+  } catch (e) {
+    if (e.name === 'AbortError') return; // user cancelled the dialog
+    toast('Could not link backup file: ' + e.message, { kind: 'error' });
+  }
+  renderBackupStatus();
+}
+async function disconnectBackupFile() {
+  backupFileHandle = null;
+  lastFsBackupAt = null;
+  await clearStoredHandle();
+  toast('Backup file disconnected', { kind: 'success' });
+  renderBackupStatus();
+}
+function renderBackupStatus() {
+  const el = document.getElementById('backupFileStatus');
+  if (!el) return;
+  if (!fsSupported) {
+    el.innerHTML = `<div class="bf-row bf-unsupported">Your browser doesn't support linked backup files. Use Chrome, Edge, or Opera, or rely on the snapshot history below + periodic ↓ Export.</div>`;
+    return;
+  }
+  if (!backupFileHandle) {
+    el.innerHTML = `
+      <div class="bf-row bf-disconnected">
+        <div>
+          <div class="bf-name">Not connected</div>
+          <div class="bf-meta">Pick a <code>.json</code> file (ideally inside a OneDrive / iCloud / Drive folder) and the planner will keep it in sync automatically.</div>
+        </div>
+        <button class="btn primary" id="bfConnect">Connect backup file</button>
+      </div>
+    `;
+    document.getElementById('bfConnect').onclick = connectBackupFile;
+    return;
+  }
+  const lastInfo = lastFsBackupAt
+    ? `Last write: ${formatRelative(lastFsBackupAt)}`
+    : 'Connected — first write will run on your next change.';
+  el.innerHTML = `
+    <div class="bf-row bf-connected">
+      <div>
+        <div class="bf-name">Linked: <strong>${escapeHtml(backupFileHandle.name)}</strong></div>
+        <div class="bf-meta">${lastInfo}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn ghost" id="bfWriteNow" title="Force a write right now">Write now</button>
+        <button class="btn danger" id="bfDisconnect">Disconnect</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('bfWriteNow').onclick = () => writeBackupFile({ interactive: true });
+  document.getElementById('bfDisconnect').onclick = disconnectBackupFile;
+}
+async function initBackupFile() {
+  if (!fsSupported) { renderBackupStatus(); return; }
+  backupFileHandle = await loadStoredHandle();
+  renderBackupStatus();
+}
+
+/* ---------- Derived UI sync ---------- */
+// Things that depend on settings/dates but live outside the main schedule grid.
+function syncDerivedUI() {
+  const taskClsSel = document.getElementById('newTaskClass');
+  if (taskClsSel) {
+    const cur = taskClsSel.value;
+    populateClassSelect(taskClsSel, cur);
+  }
+  const sp = document.querySelector('#schedulePanel .panel-header h2');
+  if (sp) sp.dataset.printWeek = fmtRange(currentWeekStart, addDays(currentWeekStart, 4));
+  const subEl = document.getElementById('userTag');
+  if (subEl) subEl.textContent = state.settings.subtitle || '';
+}
+
+/* ---------- Week navigation ---------- */
+function setWeek(start) {
+  currentWeekStart = start;
+  renderSchedule();
+  renderTasks();
+}
+function goPrev()  { setWeek(addDays(currentWeekStart, -7)); }
+function goNext()  { setWeek(addDays(currentWeekStart, 7));  }
+function goToday() { setWeek(startOfWeek(new Date()));        }
+function moveLesson(srcDate, srcPid, dstDate, dstPid, isCopy) {
+  if (srcDate === dstDate && srcPid === dstPid) return;
+  const src = cloneLesson(getLesson(srcDate, srcPid));
+  if (lessonIsEmpty(src)) return;
+  const dst = cloneLesson(getLesson(dstDate, dstPid));
+
+  // Snapshot for undo
+  const undoSnap = {
+    src: cloneLesson(getLesson(srcDate, srcPid)),
+    dst: cloneLesson(getLesson(dstDate, dstPid)),
+  };
+
+  commit(() => {
+    if (isCopy) {
+      setLesson(dstDate, dstPid, src);
+    } else {
+      setLesson(dstDate, dstPid, src);
+      setLesson(srcDate, srcPid, lessonIsEmpty(dst) ? null : dst);
+    }
+  });
+  toast(isCopy ? 'Lesson copied' : (lessonIsEmpty(dst) ? 'Lesson moved' : 'Lessons swapped'), {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => {
+        setLesson(srcDate, srcPid, lessonIsEmpty(undoSnap.src) ? null : undoSnap.src);
+        setLesson(dstDate, dstPid, lessonIsEmpty(undoSnap.dst) ? null : undoSnap.dst);
+      });
+    },
+  });
+}
+
+/* ---------- Copy current week to next ---------- */
+function copyWeekToNext() {
+  const src = currentWeekStart;
+  const dst = addDays(currentWeekStart, 7);
+  let srcCount = 0, dstCount = 0;
+  const srcKeys = [], dstKeys = [];
+  for (let i = 0; i < 5; i++) {
+    const sd = fmtISO(addDays(src, i));
+    const dd = fmtISO(addDays(dst, i));
+    srcKeys.push(sd); dstKeys.push(dd);
+    if (state.lessons[sd]) srcCount += Object.keys(state.lessons[sd]).length;
+    if (state.lessons[dd]) dstCount += Object.keys(state.lessons[dd]).length;
+  }
+  if (srcCount === 0) { toast('Nothing to copy — this week has no planned lessons.', { kind: 'error' }); return; }
+  if (dstCount > 0 && !confirm(`Next week already has ${dstCount} planned lesson(s). Replace them?`)) return;
+
+  // snapshot for undo
+  const undoSnap = {};
+  dstKeys.forEach(k => { undoSnap[k] = cloneLesson(state.lessons[k]); });
+
+  commit(() => {
+    dstKeys.forEach(k => { delete state.lessons[k]; });
+    srcKeys.forEach((sd, i) => {
+      if (state.lessons[sd]) state.lessons[dstKeys[i]] = cloneLesson(state.lessons[sd]);
+    });
+  });
+  toast(`Copied ${srcCount} lesson(s) to next week`, {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => {
+        dstKeys.forEach(k => {
+          if (undoSnap[k]) state.lessons[k] = undoSnap[k];
+          else delete state.lessons[k];
+        });
+      });
+    },
+  });
+}
+
+/* ---------- Jump to date ---------- */
+function jumpToDate(dateStr) {
+  if (!dateStr) return;
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return;
+  setWeek(startOfWeek(d));
+}
+
+/* ---------- Render: Schedule ---------- */
+function classById(id) { return state.settings.classes.find(c => c.id === id); }
+function periodById(id) { return state.settings.periods.find(p => p.id === id); }
+
+function renderSchedule() {
+  const thead = document.querySelector('#scheduleTable thead');
+  const tbody = document.querySelector('#scheduleTable tbody');
+  thead.innerHTML = '';
+  tbody.innerHTML = '';
+
+  // header row
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="width:110px;">When</th>';
+  for (let i = 0; i < 5; i++) {
+    const d = addDays(currentWeekStart, i);
+    const today = isToday(d);
+    headRow.innerHTML += `<th class="${today ? 'today' : ''}">${DAYS[i]} <span class="day-num">${d.getDate()}</span></th>`;
+  }
+  thead.appendChild(headRow);
+
+  // body rows
+  for (const period of state.settings.periods) {
+    const tr = document.createElement('tr');
+    const periodTd = document.createElement('td');
+    periodTd.className = 'period-col';
+    periodTd.innerHTML = `
+      <div class="period-name">${escapeHtml(period.name)}</div>
+      <div class="period-time">${period.start || ''}${period.start && period.end ? ' – ' : ''}${period.end || ''}</div>
+    `;
+    tr.appendChild(periodTd);
+
+    for (let i = 0; i < 5; i++) {
+      const d = addDays(currentWeekStart, i);
+      const dateKey = fmtISO(d);
+      const today = isToday(d);
+      const td = document.createElement('td');
+      td.className = 'cell' + (today ? ' today' : '');
+      td.dataset.date = dateKey;
+      td.dataset.periodId = period.id;
+      td.dataset.dayIdx = i;
+
+      const lesson = getLesson(dateKey, period.id) || {};
+      const hasLessonContent = !lessonIsEmpty(lesson);
+      const isFree = isExplicitFree(lesson);
+      const classId = getEffectiveClassId(lesson, period.id, i);
+      const cls = classById(classId);
+
+      if (cls) {
+        td.classList.add('has-class');
+        td.style.setProperty('--cell-color', cls.color);
+      }
+
+      let html = '<div class="cell-inner">';
+      if (cls) {
+        html += `<div class="cell-class"><span class="swatch" style="background:${escapeAttr(cls.color)}"></span>${escapeHtml(cls.name)}</div>`;
+      } else if (isFree) {
+        html += `<div class="cell-class" style="color:var(--muted);font-weight:500;"><span class="swatch" style="background:transparent;border:1px dashed var(--muted-2);"></span>Free</div>`;
+      } else if (!lesson.topic) {
+        html += `<div class="cell-empty">+ add</div>`;
+      }
+      if (lesson.topic) {
+        html += `<div class="cell-topic">${escapeHtml(lesson.topic)}</div>`;
+      }
+      if (lesson.hw) {
+        html += `<div class="cell-hw">⚐ HW</div>`;
+      }
+      html += '</div>';
+      // Override dot: indicates this slot has explicit content overriding the recurring default
+      if (lesson.classOverride || lesson.topic || lesson.notes || lesson.hw) {
+        html += `<span class="cell-override-dot" title="This slot has custom content"></span>`;
+      }
+      td.innerHTML = html;
+      td.addEventListener('click', () => openLessonModal(dateKey, period.id, i));
+      if (hasLessonContent) {
+        td.draggable = true;
+        attachCellDragSource(td, dateKey, period.id);
+      }
+      attachCellDropTarget(td, dateKey, period.id);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('weekLabel').textContent = fmtRange(currentWeekStart, addDays(currentWeekStart, 4));
+  syncDerivedUI();
+}
+
+/* ---------- Cell drag & drop ---------- */
+let dragSourceCell = null;
+function attachCellDragSource(td, dateKey, periodId) {
+  td.addEventListener('dragstart', e => {
+    dragSourceCell = { dateKey, periodId };
+    td.classList.add('cell-dragging');
+    e.dataTransfer.effectAllowed = 'copyMove';
+    try { e.dataTransfer.setData('text/plain', `${dateKey}|${periodId}`); } catch (_) {}
+  });
+  td.addEventListener('dragend', () => {
+    td.classList.remove('cell-dragging');
+    document.querySelectorAll('.cell-drop-target').forEach(el => el.classList.remove('cell-drop-target'));
+    setTimeout(() => { dragSourceCell = null; }, 50);
+  });
+}
+function attachCellDropTarget(td, dateKey, periodId) {
+  td.addEventListener('dragover', e => {
+    if (!dragSourceCell) return;
+    if (dragSourceCell.dateKey === dateKey && dragSourceCell.periodId === periodId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = (e.ctrlKey || e.metaKey) ? 'copy' : 'move';
+    td.classList.add('cell-drop-target');
+  });
+  td.addEventListener('dragleave', () => td.classList.remove('cell-drop-target'));
+  td.addEventListener('drop', e => {
+    e.preventDefault();
+    td.classList.remove('cell-drop-target');
+    if (!dragSourceCell) return;
+    const isCopy = e.ctrlKey || e.metaKey;
+    moveLesson(dragSourceCell.dateKey, dragSourceCell.periodId, dateKey, periodId, isCopy);
+    dragSourceCell = null;
+  });
+}
+/* ---------- Render: Tasks ---------- */
+let currentTaskFilter = 'all';
+
+function tasksFiltered() {
+  const today = fmtISO(new Date());
+  return state.tasks.filter(t => {
+    if (currentTaskFilter === 'all') return true;
+    if (currentTaskFilter === 'today') return t.due === today && !t.done;
+    if (currentTaskFilter === 'week') {
+      if (t.done) return false;
+      if (!t.due) return false;
+      const wkStart = fmtISO(currentWeekStart);
+      const wkEnd = fmtISO(addDays(currentWeekStart, 4));
+      return t.due >= wkStart && t.due <= wkEnd;
+    }
+    if (currentTaskFilter === 'overdue') {
+      if (t.done || !t.due) return false;
+      return t.due < today;
+    }
+    if (currentTaskFilter === 'done') return t.done;
+    return true;
+  }).sort((a, b) => {
+    // unfinished first, then by due date
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.due && b.due) return a.due.localeCompare(b.due);
+    if (a.due) return -1;
+    if (b.due) return 1;
+    return b.created - a.created;
+  });
+}
+
+function renderTaskFilters() {
+  const today = fmtISO(new Date());
+  const wkStart = fmtISO(currentWeekStart);
+  const wkEnd = fmtISO(addDays(currentWeekStart, 4));
+  const counts = {
+    all: state.tasks.filter(t => !t.done).length,
+    today: state.tasks.filter(t => !t.done && t.due === today).length,
+    week: state.tasks.filter(t => !t.done && t.due && t.due >= wkStart && t.due <= wkEnd).length,
+    overdue: state.tasks.filter(t => !t.done && t.due && t.due < today).length,
+    done: state.tasks.filter(t => t.done).length,
+  };
+  const filters = [
+    ['all', 'All'],
+    ['today', 'Today'],
+    ['week', 'This week'],
+    ['overdue', 'Overdue'],
+    ['done', 'Done'],
+  ];
+  const root = document.getElementById('taskFilters');
+  root.innerHTML = '';
+  filters.forEach(([k, label]) => {
+    const b = document.createElement('button');
+    b.className = 'filter-chip' + (currentTaskFilter === k ? ' active' : '');
+    b.innerHTML = `${label}<span class="count">${counts[k]}</span>`;
+    b.onclick = () => { currentTaskFilter = k; renderTasks(); };
+    root.appendChild(b);
+  });
+}
+
+function renderTasks() {
+  renderTaskFilters();
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  const items = tasksFiltered();
+  const today = fmtISO(new Date());
+  for (const t of items) {
+    const li = document.createElement('li');
+    li.className = 'task-item' + (t.done ? ' done' : '');
+    let dueLabel = '';
+    let dueClass = '';
+    if (t.due) {
+      if (!t.done && t.due < today) { dueClass = 'due-overdue'; dueLabel = `Overdue · ${formatDueLabel(t.due)}`; }
+      else if (t.due === today) { dueClass = 'due-today'; dueLabel = `Due today`; }
+      else { dueLabel = formatDueLabel(t.due); }
+    }
+    const prClass = `priority-${t.priority || 'med'}`;
+    const prLabel = ({ low: 'Low', med: 'Med', high: 'High' })[t.priority || 'med'];
+    const linkedCls = t.classId ? classById(t.classId) : null;
+    const classPill = linkedCls
+      ? `<span class="pill class-pill" style="color:${escapeAttr(linkedCls.color)}">${escapeHtml(linkedCls.name)}</span>`
+      : '';
+    li.innerHTML = `
+      <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="toggle done" />
+      <div class="task-body">
+        <div class="task-title"></div>
+        <div class="task-meta">
+          ${dueLabel ? `<span class="pill ${dueClass}">${dueLabel}</span>` : ''}
+          <span class="pill ${prClass}">${prLabel}</span>
+          ${classPill}
+        </div>
+      </div>
+      <button class="icon-btn task-del" title="Delete">✕</button>
+    `;
+    li.querySelector('.task-title').textContent = t.title;
+    li.querySelector('input').addEventListener('change', e => {
+      commit(() => { t.done = e.target.checked; }, { schedule: false, tasks: true });
+    });
+    li.querySelector('.task-body').addEventListener('click', () => openTaskModal(t.id));
+    li.querySelector('.task-del').addEventListener('click', e => {
+      e.stopPropagation();
+      // Delete with undo via toast — no scary confirm() popup
+      const idx = state.tasks.findIndex(x => x.id === t.id);
+      if (idx === -1) return;
+      const removed = state.tasks[idx];
+      commit(() => state.tasks.splice(idx, 1), { schedule: false, tasks: true });
+      toast(`Deleted "${removed.title}"`, {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => state.tasks.splice(Math.min(idx, state.tasks.length), 0, removed),
+                 { schedule: false, tasks: true });
+        },
+      });
+    });
+    list.appendChild(li);
+  }
+  const total = state.tasks.length;
+  const open = state.tasks.filter(t => !t.done).length;
+  document.getElementById('tasksMeta').textContent = `${open} open · ${total} total`;
+}
+
+function formatDueLabel(due) {
+  const d = new Date(due + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((d - today) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
+  if (diff > 1 && diff < 7) return d.toLocaleDateString(undefined, { weekday: 'short' });
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+/* ---------- Lesson modal ---------- */
+let lessonCtx = null;
+function openLessonModal(dateKey, periodId, dayIdx) {
+  lessonCtx = { dateKey, periodId, dayIdx };
+  const period = periodById(periodId);
+  const d = new Date(dateKey + 'T00:00:00');
+  document.getElementById('lessonTitle').textContent = period.name;
+  document.getElementById('lessonSub').textContent =
+    `${d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} · ${period.start || ''}${period.end ? '–'+period.end : ''}`;
+
+  // populate class select
+  const sel = document.getElementById('lessonClass');
+  const recurringClass = getRecurringClassId(periodId, dayIdx);
+  const recurringName = recurringClass ? (classById(recurringClass) || {}).name : '';
+  sel.innerHTML = '';
+  // "Use default" only appears when there IS a recurring default to revert to
+  if (recurringClass) {
+    const opt = document.createElement('option');
+    opt.value = CLASS_DEFAULT;
+    opt.textContent = `— Use default (${recurringName}) —`;
+    sel.appendChild(opt);
+  }
+  const noneOpt = document.createElement('option');
+  noneOpt.value = CLASS_FREE;
+  noneOpt.textContent = '— Free period (no class) —';
+  sel.appendChild(noneOpt);
+  for (const c of state.settings.classes) {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = c.name;
+    sel.appendChild(opt);
+  }
+
+  const lesson = getLesson(dateKey, periodId) || {};
+  let initial;
+  if (isExplicitFree(lesson))   initial = CLASS_FREE;
+  else if (lesson.classOverride) initial = lesson.classOverride;
+  else if (recurringClass)       initial = CLASS_DEFAULT;
+  else                           initial = CLASS_FREE;
+  sel.value = initial;
+  document.getElementById('lessonTopic').value = lesson.topic || '';
+  document.getElementById('lessonNotes').value = lesson.notes || '';
+  document.getElementById('lessonHw').value = lesson.hw || '';
+
+  showModal('lessonModal');
+  setTimeout(() => document.getElementById('lessonTopic').focus(), 50);
+}
+
+document.getElementById('lessonSave').addEventListener('click', () => {
+  if (!lessonCtx) return;
+  const { dateKey, periodId, dayIdx } = lessonCtx;
+  const recurringClass = getRecurringClassId(periodId, dayIdx);
+  const classOverride = normalizeOverride(
+    document.getElementById('lessonClass').value,
+    recurringClass
+  );
+  const lesson = {
+    topic: document.getElementById('lessonTopic').value.trim(),
+    notes: document.getElementById('lessonNotes').value.trim(),
+    hw:    document.getElementById('lessonHw').value.trim(),
+    classOverride,
+  };
+  commit(() => setLesson(dateKey, periodId, lessonIsEmpty(lesson) ? null : lesson));
+  hideModal('lessonModal');
+});
+
+document.getElementById('lessonClear').addEventListener('click', () => {
+  if (!lessonCtx) return;
+  const { dateKey, periodId } = lessonCtx;
+  commit(() => setLesson(dateKey, periodId, null));
+  hideModal('lessonModal');
+});
+
+/* ---------- Task modal ---------- */
+let editingTaskId = null;
+function openTaskModal(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  editingTaskId = id;
+  document.getElementById('editTaskTitle').value = t.title;
+  document.getElementById('editTaskDue').value = t.due || '';
+  document.getElementById('editTaskPriority').value = t.priority || 'med';
+  document.getElementById('editTaskNotes').value = t.notes || '';
+  populateClassSelect(document.getElementById('editTaskClass'), t.classId || '');
+  showModal('taskModal');
+  setTimeout(() => document.getElementById('editTaskTitle').focus(), 50);
+}
+document.getElementById('editTaskSave').addEventListener('click', () => {
+  const t = state.tasks.find(x => x.id === editingTaskId);
+  if (!t) return;
+  commit(() => {
+    t.title    = document.getElementById('editTaskTitle').value.trim() || t.title;
+    t.due      = document.getElementById('editTaskDue').value || null;
+    t.priority = document.getElementById('editTaskPriority').value;
+    t.classId  = document.getElementById('editTaskClass').value || null;
+    t.notes    = document.getElementById('editTaskNotes').value.trim();
+  }, { schedule: false, tasks: true });
+  hideModal('taskModal');
+});
+document.getElementById('editTaskDelete').addEventListener('click', () => {
+  const t = state.tasks.find(x => x.id === editingTaskId);
+  if (!t) return;
+  const idx = state.tasks.indexOf(t);
+  commit(() => state.tasks.splice(idx, 1), { schedule: false, tasks: true });
+  hideModal('taskModal');
+  toast(`Deleted "${t.title}"`, {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => state.tasks.splice(Math.min(idx, state.tasks.length), 0, t),
+             { schedule: false, tasks: true });
+    },
+  });
+});
+
+function populateClassSelect(sel, currentValue) {
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— No class —</option>';
+  for (const c of state.settings.classes) {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.name;
+    sel.appendChild(o);
+  }
+  sel.value = currentValue || '';
+}
+
+/* ---------- Add task ---------- */
+document.getElementById('taskAddForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title = document.getElementById('newTaskTitle').value.trim();
+  if (!title) return;
+  const newTask = {
+    id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    title,
+    notes: '',
+    due:      document.getElementById('newTaskDue').value || null,
+    priority: document.getElementById('newTaskPriority').value,
+    classId:  document.getElementById('newTaskClass').value || null,
+    done: false,
+    created: Date.now(),
+  };
+  commit(() => state.tasks.push(newTask), { schedule: false, tasks: true });
+  document.getElementById('newTaskTitle').value = '';
+  document.getElementById('newTaskDue').value = '';
+  document.getElementById('newTaskClass').value = '';
+});
+
+/* ---------- Settings modal ---------- */
+function openSettings() {
+  // Header subtitle
+  const subInput = document.getElementById('subtitleInput');
+  subInput.value = state.settings.subtitle || '';
+  subInput.oninput = () => {
+    commit(() => { state.settings.subtitle = subInput.value; }, { schedule: true });
+  };
+
+  // Periods table
+  const pBody = document.getElementById('periodsBody');
+  pBody.innerHTML = '';
+  state.settings.periods.forEach((p, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" data-k="name" value="${escapeAttr(p.name)}" /></td>
+      <td><input type="time" data-k="start" value="${escapeAttr(p.start || '')}" /></td>
+      <td><input type="time" data-k="end" value="${escapeAttr(p.end || '')}" /></td>
+      <td><button class="icon-btn" title="Remove">✕</button></td>
+    `;
+    // Live-commit each edit
+    tr.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const cur = state.settings.periods[idx];
+        if (!cur) return;
+        commit(() => { cur[inp.dataset.k] = inp.value; });
+      });
+    });
+    tr.querySelector('button').addEventListener('click', () => {
+      if (state.settings.periods.length <= 1) {
+        toast('Keep at least one period.', { kind: 'error' });
+        return;
+      }
+      capturePeriodsFromTable();
+      const removed = state.settings.periods[idx];
+      const removedRecurring = state.settings.recurring[removed.id];
+      commit(() => {
+        state.settings.periods.splice(idx, 1);
+        delete state.settings.recurring[removed.id];
+      }, { settings: true });
+      toast(`Removed "${removed.name}"`, {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => {
+            state.settings.periods.splice(Math.min(idx, state.settings.periods.length), 0, removed);
+            if (removedRecurring) state.settings.recurring[removed.id] = removedRecurring;
+          }, { settings: true });
+        },
+      });
+    });
+    pBody.appendChild(tr);
+  });
+
+  // Classes table
+  const cBody = document.getElementById('classesBody');
+  cBody.innerHTML = '';
+  state.settings.classes.forEach((c, idx) => {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.dataset.idx = idx;
+    tr.innerHTML = `
+      <td class="drag-handle" title="Drag to reorder">≡</td>
+      <td><div class="swatch-input"><input type="color" data-k="color" value="${escapeAttr(c.color || '#2563eb')}" /></div></td>
+      <td><input type="text" data-k="name" value="${escapeAttr(c.name)}" /></td>
+      <td><button class="icon-btn" title="Remove">✕</button></td>
+    `;
+    tr.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const cur = state.settings.classes[idx];
+        if (!cur) return;
+        commit(() => { cur[inp.dataset.k] = inp.value; });
+      });
+    });
+    tr.querySelector('button').addEventListener('click', () => {
+      capturePeriodsFromTable();
+      collectClassesFromTable();
+      const removed = state.settings.classes[idx];
+      commit(() => state.settings.classes.splice(idx, 1), { settings: true });
+      toast(`Removed class "${removed.name}"`, {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => state.settings.classes.splice(Math.min(idx, state.settings.classes.length), 0, removed),
+                 { settings: true });
+        },
+      });
+    });
+    cBody.appendChild(tr);
+  });
+  attachClassesDragAndDrop(cBody);
+
+  // Backups: linked file + snapshot list
+  renderBackupStatus();
+  renderSnapshotsList();
+
+  // Recurring schedule editor
+  renderRecurringEditor();
+  // Live-commit recurring select changes
+  document.querySelectorAll('#recurringTable select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const pid = sel.dataset.pid;
+      const day = parseInt(sel.dataset.day, 10);
+      commit(() => {
+        if (!state.settings.recurring[pid]) state.settings.recurring[pid] = [null,null,null,null,null];
+        state.settings.recurring[pid][day] = sel.value || null;
+      });
+    });
+  });
+
+  showModal('settingsModal');
+}
+
+function capturePeriodsFromTable() {
+  const pBody = document.getElementById('periodsBody');
+  if (!pBody) return;
+  [...pBody.querySelectorAll('tr')].forEach((tr, idx) => {
+    const p = state.settings.periods[idx];
+    if (!p) return;
+    tr.querySelectorAll('input').forEach(inp => { p[inp.dataset.k] = inp.value; });
+  });
+}
+
+// When the settings modal closes, do a final commit + chronological sort.
+function finalizeSettings() {
+  commit(() => {
+    capturePeriodsFromTable();
+    collectClassesFromTable();
+    sortPeriodsChronologically();
+  });
+}
+
+function collectClassesFromTable() {
+  const cBody = document.getElementById('classesBody');
+  if (!cBody) return;
+  const rows = [...cBody.querySelectorAll('tr')];
+  rows.forEach((tr, idx) => {
+    const cls = state.settings.classes[idx];
+    if (!cls) return;
+    tr.querySelectorAll('input').forEach(inp => {
+      cls[inp.dataset.k] = inp.value;
+    });
+  });
+}
+
+function attachClassesDragAndDrop(tbody) {
+  let dragSrcIdx = null;
+
+  const clearMarkers = () => {
+    tbody.querySelectorAll('tr').forEach(r => {
+      r.classList.remove('drag-over-top', 'drag-over-bottom', 'dragging');
+    });
+  };
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('dragstart', e => {
+      dragSrcIdx = parseInt(tr.dataset.idx, 10);
+      tr.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      // required for Firefox
+      try { e.dataTransfer.setData('text/plain', String(dragSrcIdx)); } catch (_) {}
+    });
+
+    tr.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const rect = tr.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over-top','drag-over-bottom'));
+      tr.classList.add(before ? 'drag-over-top' : 'drag-over-bottom');
+    });
+
+    tr.addEventListener('dragleave', () => {
+      tr.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    tr.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetIdx = parseInt(tr.dataset.idx, 10);
+      const rect = tr.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      let insertAt = before ? targetIdx : targetIdx + 1;
+      clearMarkers();
+
+      if (dragSrcIdx == null || dragSrcIdx === targetIdx) return;
+
+      // Pull current input values into state so unsaved edits aren't lost
+      collectClassesFromTable();
+
+      const fromIdx = dragSrcIdx;
+      const adjustedInsertAt = (fromIdx < insertAt) ? insertAt - 1 : insertAt;
+      dragSrcIdx = null;
+      commit(() => {
+        const moved = state.settings.classes.splice(fromIdx, 1)[0];
+        state.settings.classes.splice(adjustedInsertAt, 0, moved);
+      }, { settings: true });
+    });
+
+    tr.addEventListener('dragend', clearMarkers);
+  });
+}
+
+function renderRecurringEditor() {
+  const t = document.getElementById('recurringTable');
+  t.innerHTML = '';
+  // header
+  let html = '<thead><tr><th>Period</th>';
+  for (const d of DAYS) html += `<th>${d}</th>`;
+  html += '</tr></thead><tbody>';
+  for (const p of state.settings.periods) {
+    html += `<tr><th>${escapeHtml(p.name)}</th>`;
+    for (let i = 0; i < 5; i++) {
+      const cur = (state.settings.recurring[p.id] && state.settings.recurring[p.id][i]) || '';
+      html += `<td><select data-pid="${escapeAttr(p.id)}" data-day="${i}"><option value="">—</option>`;
+      for (const c of state.settings.classes) {
+        html += `<option value="${escapeAttr(c.id)}" ${cur===c.id?'selected':''}>${escapeHtml(c.name)}</option>`;
+      }
+      html += '</select></td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+document.getElementById('addPeriodBtn').addEventListener('click', () => {
+  capturePeriodsFromTable();
+  const pidNum = state.settings.periods.length + 1;
+  commit(() => {
+    state.settings.periods.push({
+      id: 'p_' + Date.now().toString(36),
+      name: 'Period ' + pidNum,
+      start: '', end: ''
+    });
+  }, { settings: true });
+});
+document.getElementById('addClassBtn').addEventListener('click', () => {
+  capturePeriodsFromTable();
+  collectClassesFromTable();
+  const palette = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+  commit(() => {
+    state.settings.classes.push({
+      id: 'c_' + Date.now().toString(36),
+      name: 'New class',
+      color: palette[state.settings.classes.length % palette.length],
+    });
+  }, { settings: true });
+});
+
+function sortPeriodsChronologically() {
+  // Stable sort: parse "HH:MM" → minutes; missing/invalid values sort to the end.
+  const toMinutes = t => {
+    if (!t || typeof t !== 'string') return Infinity;
+    const m = t.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return Infinity;
+    const h = parseInt(m[1], 10), mm = parseInt(m[2], 10);
+    if (isNaN(h) || isNaN(mm)) return Infinity;
+    return h * 60 + mm;
+  };
+  // decorate-sort-undecorate to keep stability across engines
+  state.settings.periods = state.settings.periods
+    .map((p, i) => ({ p, i, k: toMinutes(p.start) }))
+    .sort((a, b) => a.k - b.k || a.i - b.i)
+    .map(x => x.p);
+}
+
+/* ---------- Modal helpers ---------- */
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function hideModal(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.remove('show');
+  if (id === 'settingsModal') finalizeSettings();
+}
+function closeModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.classList.remove('show');
+  if (modalEl.id === 'settingsModal') finalizeSettings();
+}
+document.querySelectorAll('.modal-backdrop').forEach(b => {
+  b.addEventListener('click', e => { if (e.target === b) closeModal(b); });
+});
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.closest('.modal-backdrop')));
+});
+
+/* ---------- Global keyboard shortcuts ---------- */
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+document.addEventListener('keydown', e => {
+  // Esc closes any open modal
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop.show').forEach(m => closeModal(m));
+    return;
+  }
+  // Ctrl/Cmd+Enter saves the topmost modal (clicks its primary button)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    const open = [...document.querySelectorAll('.modal-backdrop.show')].pop();
+    if (open) {
+      e.preventDefault();
+      const primary = open.querySelector('.modal-foot .btn.primary:not([data-close])');
+      if (primary) primary.click();
+      else closeModal(open);
+    }
+    return;
+  }
+  // Ignore other shortcuts when typing
+  if (isTypingTarget(e.target)) return;
+  if (document.querySelector('.modal-backdrop.show')) return;
+
+  if (e.key === 'ArrowLeft')                goPrev();
+  else if (e.key === 'ArrowRight')          goNext();
+  else if (e.key === 't' || e.key === 'T')  goToday();
+});
+
+/* ---------- Week nav ---------- */
+document.getElementById('weekPrev').addEventListener('click', goPrev);
+document.getElementById('weekNext').addEventListener('click', goNext);
+document.getElementById('weekToday').addEventListener('click', goToday);
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+
+// Click week label → open hidden date input as picker
+document.getElementById('weekLabel').addEventListener('click', () => {
+  const inp = document.getElementById('weekDateJump');
+  inp.value = fmtISO(currentWeekStart);
+  // Position the (visually hidden) input near the label so the native picker appears nearby
+  const rect = document.getElementById('weekLabel').getBoundingClientRect();
+  inp.style.left = (rect.left + window.scrollX) + 'px';
+  inp.style.top = (rect.bottom + window.scrollY) + 'px';
+  inp.style.opacity = '0';
+  inp.style.pointerEvents = 'auto';
+  if (typeof inp.showPicker === 'function') {
+    try { inp.showPicker(); } catch (_) { inp.focus(); inp.click(); }
+  } else {
+    inp.focus(); inp.click();
+  }
+});
+document.getElementById('weekDateJump').addEventListener('change', e => {
+  jumpToDate(e.target.value);
+});
+
+document.getElementById('copyWeekBtn').addEventListener('click', copyWeekToNext);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+/* ---------- Export / Import ---------- */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  a.href = url;
+  a.download = `teacher-planner-${fmtISO(d)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Exported planner JSON', { kind: 'success' });
+});
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      // schema sanity check
+      if (typeof imported !== 'object' || imported === null) throw new Error('File is not a JSON object.');
+      if (!imported.settings || typeof imported.settings !== 'object') throw new Error('Missing "settings".');
+      if (!Array.isArray(imported.settings.periods)) throw new Error('Missing "settings.periods" array.');
+      if (!Array.isArray(imported.settings.classes)) throw new Error('Missing "settings.classes" array.');
+      if (!Array.isArray(imported.tasks)) throw new Error('Missing "tasks" array.');
+      if (imported.lessons && typeof imported.lessons !== 'object') throw new Error('"lessons" must be an object.');
+      // backfill optional bits
+      imported.settings.recurring = imported.settings.recurring || {};
+      imported.lessons = imported.lessons || {};
+
+      if (!confirm('Replace your current planner data with the imported file?')) return;
+      // snapshot for undo
+      const prev = JSON.parse(JSON.stringify(state));
+      commit(() => {
+        state = imported;
+        sortPeriodsChronologically();
+      }, { tasks: true });
+      toast('Import complete', {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => { state = prev; }, { tasks: true });
+        },
+      });
+    } catch (err) {
+      toast('Import failed: ' + err.message, { kind: 'error', duration: 4000 });
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ---------- Utilities ---------- */
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/"/g,'&quot;');
+}
+
+/* ---------- Boot ---------- */
+load();
+sortPeriodsChronologically();
+
+// Seed sample recurring schedule on first run for a more useful first impression
+if (Object.keys(state.settings.recurring).length === 0 && !localStorage.getItem(SEEDED_KEY)) {
+  const r = {};
+  // simple alternating pattern across the week
+  state.settings.periods.forEach((p, idx) => {
+    r[p.id] = [0,1,2,3,4].map(d => {
+      const cls = state.settings.classes[(idx + d) % state.settings.classes.length];
+      return cls ? cls.id : null;
+    });
+  });
+  state.settings.recurring = r;
+  localStorage.setItem(SEEDED_KEY, '1');
+  save();
+}
+
+renderSchedule();
+renderTasks();
+populateClassSelect(document.getElementById('newTaskClass'), '');
+initBackupFile();
+</script>
+</body>
+</html>
