@@ -22,23 +22,7 @@
     --shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
     --radius: 8px;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    
-    /* Dark mode support */
-    --bg-dark: #0f172a;
-    --panel-dark: #1e293b;
-    --border-dark: #334155;
-    --text-dark: #f1f5f9;
-    --muted-dark: #94a3b8;
   }
-  
-  html.dark-mode {
-    --bg: var(--bg-dark);
-    --panel: var(--panel-dark);
-    --border: var(--border-dark);
-    --text: var(--text-dark);
-    --muted: var(--muted-dark);
-  }
-  
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
@@ -47,9 +31,7 @@
     color: var(--text);
     font-size: 13px;
     line-height: 1.45;
-    transition: background-color .2s, color .2s;
   }
-  
   /* ---- Header ---- */
   header.topbar {
     display: flex;
@@ -95,7 +77,7 @@
     font-size: 13px;
   }
   .week-nav button:hover { background: #f1f3f6; color: var(--text); }
-  .week-label {
+  .week-nav .week-label {
     padding: 4px 10px;
     font-weight: 600;
     font-size: 12.5px;
@@ -118,7 +100,6 @@
     transition: background .12s, border-color .12s;
   }
   button.btn:hover { background: #f1f3f6; }
-  button.btn:active { transform: scale(0.98); }
   button.btn.primary {
     background: var(--accent);
     color: white;
@@ -138,53 +119,8 @@
     border-radius: 5px; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center;
     color: var(--muted-2);
-    transition: background .1s;
   }
   .icon-btn:hover { background: #f1f3f6; color: var(--text); }
-  
-  /* Dark mode toggle */
-  .dark-mode-toggle {
-    width: 26px; height: 26px;
-    border: 1px solid var(--border);
-    background: var(--panel);
-    border-radius: 5px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted-2);
-    font-size: 14px;
-    transition: background .1s, color .1s;
-  }
-  .dark-mode-toggle:hover {
-    background: #f1f3f6;
-    color: var(--text);
-  }
-  
-  /* Week summary card */
-  .week-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-  .summary-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .summary-stat-value {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-  .summary-stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .04em;
-  }
 
   /* ---- Layout ---- */
   main.layout {
@@ -195,11 +131,8 @@
     max-width: 1600px;
     margin: 0 auto;
   }
-  @media (max-width: 768px) {
-    main.layout { 
-      grid-template-columns: 1fr;
-      padding: 10px 10px 20px;
-    }
+  @media (max-width: 1100px) {
+    main.layout { grid-template-columns: 1fr; }
   }
   .panel {
     background: var(--panel);
@@ -219,6 +152,54 @@
     letter-spacing: .01em;
   }
   .panel-header .meta { font-size: 12px; color: var(--muted); }
+
+  /* Class filter chips */
+  .class-filters {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: #fafbfc;
+    flex-wrap: wrap;
+  }
+  .class-filters .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted-2);
+    margin-right: 4px;
+  }
+  .cf-chip {
+    border: 1px solid currentColor;
+    background: transparent;
+    color: var(--muted);
+    padding: 3px 10px;
+    font-size: 11.5px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background .12s, color .12s;
+  }
+  .cf-chip .cf-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+  .cf-chip:hover { background: rgba(0,0,0,.04); }
+  .cf-chip.active {
+    background: var(--cf-color, var(--accent));
+    color: white;
+    border-color: var(--cf-color, var(--accent));
+  }
+  .cf-chip.active .cf-dot { background: white; }
+  .cf-chip.cf-all { color: var(--text); }
+  .cf-chip.cf-all.active { background: var(--text); border-color: var(--text); color: white; }
 
   /* ---- Schedule grid ---- */
   .grid-wrap { padding: 0; overflow: auto; }
@@ -272,7 +253,7 @@
     height: 86px;
     cursor: pointer;
     position: relative;
-    transition: background .1s;
+    transition: background .1s, opacity .15s;
     border-left: 3px solid transparent;
   }
   td.cell:hover { background: #fbfbfd; }
@@ -283,6 +264,50 @@
     background: var(--accent-soft) !important;
     box-shadow: inset 0 0 0 2px var(--accent);
   }
+  /* Class filter dim: focus on one class, fade others */
+  td.cell.dimmed .cell-inner { opacity: .18; }
+  td.cell.dimmed .cell-override-dot { opacity: .25; }
+  /* Day off styling */
+  td.cell.day-off {
+    background-image: repeating-linear-gradient(135deg,
+      transparent 0 8px,
+      rgba(239,68,68,.06) 8px 16px);
+  }
+  td.cell.day-off .cell-inner { opacity: .55; }
+  table.schedule thead th.day-off {
+    background: #fef2f2 !important;
+    color: var(--danger) !important;
+  }
+  table.schedule thead th.day-off .day-num { color: var(--danger) !important; }
+  .day-off-reason {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--danger);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .day-off-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted-2);
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+    padding: 2px 4px;
+    margin-left: 4px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity .12s, color .12s, background .12s;
+    vertical-align: middle;
+  }
+  table.schedule thead th:hover .day-off-btn { opacity: .9; }
+  .day-off-btn:hover { background: rgba(239,68,68,.1); color: var(--danger); }
+  table.schedule thead th.day-off .day-off-btn { opacity: 1; color: var(--danger); }
   td.cell .cell-override-dot {
     position: absolute;
     top: 5px;
@@ -349,7 +374,6 @@
     background: var(--panel);
     color: var(--muted);
     cursor: pointer;
-    transition: background .1s;
   }
   .filter-chip.active {
     background: var(--accent);
@@ -362,21 +386,13 @@
     opacity: .8;
     font-size: 11px;
   }
-  .task-sort-controls {
-    display: flex;
-    gap: 6px;
-    margin-left: auto;
-    flex-wrap: wrap;
-  }
   .task-add {
     display: flex; gap: 6px;
     padding: 10px 14px;
     border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
   }
   .task-add input[type="text"] {
     flex: 1;
-    min-width: 150px;
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 6px 9px;
@@ -414,7 +430,6 @@
     padding: 9px 14px;
     border-bottom: 1px solid var(--border);
     position: relative;
-    transition: background .1s;
   }
   .task-item:hover { background: #fbfbfd; }
   .task-item input[type="checkbox"] {
@@ -428,7 +443,6 @@
     font-size: 13px;
     color: var(--text);
     word-wrap: break-word;
-    cursor: pointer;
   }
   .task-item.done .task-title {
     text-decoration: line-through;
@@ -453,13 +467,6 @@
     background: var(--danger);
     color: #fff;
     font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .task-meta .pill.due-overdue::before {
-    content: "⚠";
-    font-size: 9px;
   }
   .task-meta .pill.class-pill {
     border: 1px solid currentColor;
@@ -471,29 +478,6 @@
   .task-meta .pill.priority-low { background: #ecfdf5; color: #047857; }
   .task-item .task-del { opacity: 0; }
   .task-item:hover .task-del { opacity: 1; }
-  
-  /* Task progress bar */
-  .task-progress {
-    padding: 8px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: #e5e7eb;
-    border-radius: 3px;
-    overflow: hidden;
-    margin-bottom: 4px;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--success);
-    transition: width .3s;
-  }
-  .progress-text {
-    font-size: 11px;
-    color: var(--muted);
-  }
 
   /* ---- Modal ---- */
   .modal-backdrop {
@@ -514,11 +498,6 @@
     overflow: hidden;
     display: flex; flex-direction: column;
     max-height: 90vh;
-  }
-  @media (max-width: 768px) {
-    .modal {
-      max-width: 100%;
-    }
   }
   .modal-head {
     padding: 14px 18px;
@@ -558,8 +537,7 @@
     padding: 7px 9px;
     font-size: 13px;
     font-family: inherit;
-    background: var(--panel);
-    color: var(--text);
+    background: white;
   }
   .field textarea { resize: vertical; min-height: 70px; }
   .field-row { display: flex; gap: 10px; }
@@ -570,11 +548,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-  }
-  @media (max-width: 768px) {
-    .settings-grid {
-      grid-template-columns: 1fr;
-    }
   }
   .periods-table, .classes-table {
     width: 100%; border-collapse: collapse; font-size: 12.5px;
@@ -599,8 +572,6 @@
     border-radius: 5px;
     font-size: 12.5px;
     font-family: inherit;
-    background: var(--panel);
-    color: var(--text);
   }
   .swatch-input {
     display: flex; align-items: center; gap: 6px;
@@ -648,7 +619,6 @@
     background: transparent;
     font-size: 12px;
     font-family: inherit;
-    color: var(--text);
   }
   .help { color: var(--muted); font-size: 11.5px; margin: 4px 0 10px; }
 
@@ -657,7 +627,7 @@
   ::-webkit-scrollbar-thumb:hover { background: #b9bfc9; }
 
   /* Sticky tasks panel on desktop */
-  @media (min-width: 769px) {
+  @media (min-width: 1101px) {
     #tasksPanel {
       position: sticky;
       top: 60px;
@@ -685,7 +655,6 @@
     font-variant-numeric: tabular-nums;
   }
   .week-label-btn:hover { background: #f1f3f6; }
-  
   /* Hidden helper for date jump */
   .date-jump {
     position: absolute;
@@ -759,8 +728,6 @@
     padding: 8px 14px;
     border-top: 1px solid var(--border);
     background: #fafbfc;
-    max-height: 60px;
-    overflow-y: auto;
   }
 
   /* Settings auto-save label */
@@ -797,8 +764,6 @@
     padding: 8px 12px;
     border-bottom: 1px solid var(--border);
     font-size: 12.5px;
-    cursor: pointer;
-    transition: background .1s;
   }
   .snapshot-row:last-child { border-bottom: none; }
   .snapshot-row:hover { background: #fafbfc; }
@@ -826,7 +791,6 @@
   }
   .bf-row.bf-disconnected { background: #fffbeb; border-color: #fde68a; }
   .bf-row.bf-connected    { background: #ecfdf5; border-color: #a7f3d0; }
-  .bf-row.bf-synced-time  { font-size: 11px; color: var(--muted); }
   .bf-row.bf-unsupported  { background: #fafbfc; color: var(--muted); font-style: italic; }
   .bf-name { font-weight: 600; }
   .bf-name code {
@@ -836,53 +800,6 @@
     font-size: 11.5px;
   }
   .bf-meta { color: var(--muted); margin-top: 3px; line-height: 1.4; }
-
-  /* Help dialog */
-  .help-dialog {
-    max-width: 600px;
-  }
-  .help-section {
-    margin-bottom: 16px;
-  }
-  .help-section h4 {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--muted);
-    letter-spacing: .04em;
-    margin: 0 0 8px 0;
-  }
-  .help-section ul {
-    margin: 0;
-    padding-left: 18px;
-    font-size: 12px;
-    line-height: 1.6;
-  }
-  .help-section li {
-    margin-bottom: 4px;
-  }
-
-  /* Mobile adjustments */
-  @media (max-width: 480px) {
-    .task-add {
-      flex-direction: column;
-    }
-    .task-add input,
-    .task-add select,
-    .task-add button {
-      width: 100%;
-    }
-    .week-nav {
-      flex-wrap: wrap;
-    }
-    .topbar-actions {
-      gap: 4px;
-    }
-    button.btn {
-      padding: 5px 9px;
-      font-size: 12px;
-    }
-  }
 
   /* ---- Print ---- */
   @media print {
@@ -926,19 +843,17 @@
     </div>
   </div>
   <div class="week-nav">
-    <button id="weekPrev" title="Previous week (←)" aria-label="Previous week">‹</button>
-    <button id="weekToday" title="Jump to this week (T)" aria-label="Jump to today">Today</button>
-    <button class="week-label-btn" id="weekLabel" title="Click to jump to a date" aria-label="Week selector">—</button>
+    <button id="weekPrev" title="Previous week (←)">‹</button>
+    <button id="weekToday" title="Jump to this week (T)">Today</button>
+    <button class="week-label-btn" id="weekLabel" title="Click to jump to a date">—</button>
     <input type="date" id="weekDateJump" class="date-jump" tabindex="-1" aria-hidden="true" />
-    <button id="weekNext" title="Next week (→)" aria-label="Next week">›</button>
+    <button id="weekNext" title="Next week (→)">›</button>
     <span class="divider"></span>
-    <button id="copyWeekBtn" title="Duplicate this week's lessons to next week" aria-label="Copy week">⧉ Copy → next</button>
+    <button id="copyWeekBtn" title="Duplicate this week's lessons to next week" style="font-size:12px;">⧉ Copy → next</button>
   </div>
   <div class="topbar-actions">
-    <button class="icon-btn dark-mode-toggle" id="darkModeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
-    <button class="btn ghost" id="helpBtn" title="Keyboard shortcuts (?)">? Help</button>
-    <button class="btn ghost" id="printBtn" title="Print this week" aria-label="Print">⎙ Print</button>
-    <button class="btn ghost" id="settingsBtn" aria-label="Settings">⚙ Settings</button>
+    <button class="btn ghost" id="printBtn" title="Print this week">⎙ Print</button>
+    <button class="btn ghost" id="settingsBtn">⚙ Settings</button>
     <button class="btn" id="exportBtn">↓ Export</button>
     <button class="btn" id="importBtn">↑ Import</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" />
@@ -950,9 +865,9 @@
   <section class="panel" id="schedulePanel">
     <div class="panel-header">
       <h2>Weekly Schedule</h2>
-      <span class="meta" id="scheduleMeta">Click any cell to plan a lesson</span>
+      <span class="meta" id="scheduleMeta">Click any cell to plan · drag to swap · Ctrl+drag to copy</span>
     </div>
-    <div class="week-summary" id="weekSummary"></div>
+    <div class="class-filters" id="classFilters"></div>
     <div class="grid-wrap">
       <table class="schedule" id="scheduleTable">
         <thead></thead>
@@ -967,9 +882,7 @@
       <h2>To-Do</h2>
       <span class="meta" id="tasksMeta">0 tasks</span>
     </div>
-    <div class="task-progress" id="taskProgress"></div>
     <div class="task-controls" id="taskFilters"></div>
-    <div class="task-controls task-sort-controls" id="taskSortControls"></div>
     <form class="task-add" id="taskAddForm" autocomplete="off">
       <input type="text" id="newTaskTitle" placeholder="New task… (e.g. Grade Ch.4 quizzes)" required />
       <input type="date" id="newTaskDue" title="Due date" />
@@ -985,64 +898,10 @@
     </form>
     <ul class="task-list" id="taskList"></ul>
     <div class="keyboard-hint">
-      <kbd>←</kbd> <kbd>→</kbd> weeks · <kbd>T</kbd> today · <kbd>?</kbd> help · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> save
+      <kbd>←</kbd> <kbd>→</kbd> weeks · <kbd>T</kbd> today · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> save · drag a cell to swap, <kbd>Ctrl</kbd>+drag to copy
     </div>
   </section>
 </main>
-
-<!-- Help modal -->
-<div class="modal-backdrop" id="helpModal">
-  <div class="modal help-dialog">
-    <div class="modal-head">
-      <div>
-        <h3>Keyboard Shortcuts</h3>
-        <div class="sub">Quick reference for common actions</div>
-      </div>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="help-section">
-        <h4>Navigation</h4>
-        <ul>
-          <li><kbd>←</kbd> Previous week</li>
-          <li><kbd>→</kbd> Next week</li>
-          <li><kbd>T</kbd> Jump to today</li>
-          <li><kbd>?</kbd> Show this help</li>
-        </ul>
-      </div>
-      <div class="help-section">
-        <h4>Editing</h4>
-        <ul>
-          <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> Undo last change</li>
-          <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> Redo</li>
-          <li><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Save (in modal)</li>
-          <li><kbd>Esc</kbd> Close modal</li>
-        </ul>
-      </div>
-      <div class="help-section">
-        <h4>Schedule</h4>
-        <ul>
-          <li>Click cell to add lesson</li>
-          <li>Drag cell to swap lessons</li>
-          <li><kbd>Ctrl</kbd>+drag to copy lesson</li>
-          <li>Click "Copy → next" to duplicate week</li>
-        </ul>
-      </div>
-      <div class="help-section">
-        <h4>Tasks</h4>
-        <ul>
-          <li>Check to mark complete</li>
-          <li>Click task to edit</li>
-          <li>Filter by priority or due date</li>
-          <li>Sort by due date or priority</li>
-        </ul>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn primary" data-close>Got it</button>
-    </div>
-  </div>
-</div>
 
 <!-- Lesson modal -->
 <div class="modal-backdrop" id="lessonModal">
@@ -1052,7 +911,11 @@
         <h3 id="lessonTitle">Lesson</h3>
         <div class="sub" id="lessonSub"></div>
       </div>
-      <button class="icon-btn" data-close aria-label="Close">✕</button>
+      <div style="display:flex;gap:2px;align-items:center;">
+        <button class="icon-btn" id="lessonPrev" title="Previous lesson of this class">‹</button>
+        <button class="icon-btn" id="lessonNext" title="Next lesson of this class">›</button>
+        <button class="icon-btn" data-close style="margin-left:4px;">✕</button>
+      </div>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -1073,7 +936,7 @@
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn danger" id="lessonClear" aria-label="Delete lesson">Delete lesson</button>
+      <button class="btn danger" id="lessonClear">Delete lesson</button>
       <button class="btn ghost" data-close>Cancel</button>
       <button class="btn primary" id="lessonSave">Save lesson <kbd style="margin-left:4px;background:rgba(255,255,255,.2);border-color:transparent;color:#dbeafe;">Ctrl+↵</kbd></button>
     </div>
@@ -1087,7 +950,7 @@
       <div>
         <h3>Edit task</h3>
       </div>
-      <button class="icon-btn" data-close aria-label="Close">✕</button>
+      <button class="icon-btn" data-close>✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -1120,7 +983,7 @@
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn danger" id="editTaskDelete" aria-label="Delete task">Delete</button>
+      <button class="btn danger" id="editTaskDelete">Delete</button>
       <button class="btn ghost" data-close>Cancel</button>
       <button class="btn primary" id="editTaskSave">Save</button>
     </div>
@@ -1135,7 +998,7 @@
         <h3>Settings</h3>
         <div class="sub">Configure your periods, classes, and recurring weekly schedule.</div>
       </div>
-      <button class="icon-btn" data-close aria-label="Close">✕</button>
+      <button class="icon-btn" data-close>✕</button>
     </div>
     <div class="modal-body">
       <div class="field" style="margin-bottom: 14px;">
@@ -1172,7 +1035,7 @@
 
       <hr style="margin:18px 0;border:none;border-top:1px solid var(--border);">
       <label style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Linked backup file</label>
-      <p class="help">An always-on copy of your planner saved to a real file on disk. Pick a <code>.json</code> location once (ideally inside a OneDrive / iCloud Drive / Google Drive folder so it syncs).</p>
+      <p class="help">An always-on copy of your planner saved to a real file on disk. Pick a <code>.json</code> location once (ideally inside a OneDrive / iCloud Drive / Google Drive folder so it syncs off-machine) and every change is mirrored there silently.</p>
       <div id="backupFileStatus"></div>
 
       <label style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted); margin-top: 8px; display:block;">Snapshot history (in this browser)</label>
@@ -1191,52 +1054,31 @@
 
 <script>
 /* ============================================================
-   Teacher Planner - Enhanced Edition
+   Teacher Planner
    ============================================================ */
 
 const STORAGE_KEY = 'teacherPlanner.v1';
 const SEEDED_KEY = STORAGE_KEY + '.seeded';
 const SNAPSHOTS_KEY = STORAGE_KEY + '.snapshots';
-const HISTORY_KEY = STORAGE_KEY + '.history';
-const DARK_MODE_KEY = 'teacherPlanner.darkMode';
 const MAX_SNAPSHOTS = 20;
-const MAX_HISTORY = 50;
-const SNAPSHOT_DEBOUNCE_MS = 3000;
+const SNAPSHOT_DEBOUNCE_MS = 5000; // batch a flurry of edits into one snapshot
+
+// Linked backup file (File System Access API)
+const HANDLE_DB_NAME = 'teacherPlannerHandles';
+const HANDLE_DB_STORE = 'handles';
+const HANDLE_KEY = 'backupFile';
 const FS_DEBOUNCE_MS = 2000;
 const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
 const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
 
+// Class-override sentinels. lesson.classOverride is one of:
+//   undefined / null / ''  → INHERIT from the recurring schedule
+//   CLASS_FREE             → explicit free period (overrides any recurring class)
+//   any other string       → that class's id
+// CLASS_DEFAULT is only used as a select-option value in the lesson modal,
+// representing "revert to recurring default"; it never lands in stored data.
 const CLASS_FREE = '__none__';
 const CLASS_DEFAULT = '__default__';
-
-// Undo/redo history
-let undoStack = [];
-let redoStack = [];
-
-// Task sorting
-let taskSortBy = 'due-date'; // 'due-date', 'priority', 'alpha'
-
-/* ---------- Utility Functions ---------- */
-function debounce(func, ms) {
-  let timer;
-  return function(...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => func(...args), ms);
-  };
-}
-
-/* ---------- Dark Mode ---------- */
-function initDarkMode() {
-  const isDark = localStorage.getItem(DARK_MODE_KEY) === 'true';
-  if (isDark) {
-    document.documentElement.classList.add('dark-mode');
-  }
-}
-
-function toggleDarkMode() {
-  const isDark = document.documentElement.classList.toggle('dark-mode');
-  localStorage.setItem(DARK_MODE_KEY, isDark);
-}
 
 /* ---------- Default state ---------- */
 function defaultState() {
@@ -1254,357 +1096,1379 @@ function defaultState() {
         { id: 'p8', name: 'Period 7', start: '14:10', end: '15:00' },
       ],
       classes: [
-        { id: 'c1', name: 'Math A',   color: '#3b82f6' },
-        { id: 'c2', name: 'Math B',   color: '#8b5cf6' },
-        { id: 'c3', name: 'Science',  color: '#ec4899' },
-        { id: 'c4', name: 'English',  color: '#f59e0b' },
+        { id: 'c1', name: 'Algebra II',   color: '#2563eb' },
+        { id: 'c2', name: 'Geometry',     color: '#10b981' },
+        { id: 'c3', name: 'Pre-Calculus', color: '#f59e0b' },
+        { id: 'c4', name: 'Prep / Free',  color: '#9aa1ad' },
       ],
-      recurringSchedule: {},
+      // recurring[periodId][dayIdx] = classId
+      recurring: {},
     },
-    weeks: {},
-    tasks: [],
+    // lessons[YYYY-MM-DD][periodId] = { topic, notes, hw, classOverride }
+    lessons: {},
+    tasks: [], // {id, title, notes, due, priority, done, created}
   };
 }
 
-let state = defaultState();
-let today = new Date();
-let viewWeekStart = getMonday(today);
+/* ---------- State load / save ---------- */
+let state;
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      state = JSON.parse(raw);
+      // backfill defaults if missing
+      const def = defaultState();
+      state.settings = state.settings || def.settings;
+      state.settings.periods = state.settings.periods || def.settings.periods;
+      state.settings.classes = state.settings.classes || def.settings.classes;
+      state.settings.recurring = state.settings.recurring || {};
+      if (state.settings.subtitle == null) state.settings.subtitle = def.settings.subtitle;
+      state.lessons = state.lessons || {};
+      state.tasks = state.tasks || [];
+      return;
+    }
+  } catch(e) { console.warn('load failed', e); }
+  state = defaultState();
+}
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e) { console.warn('save failed', e); }
+}
 
 /* ---------- Date helpers ---------- */
-function getMonday(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
+function startOfWeek(d) {
+  const date = new Date(d);
+  const day = date.getDay(); // 0=Sun
+  const diff = (day === 0 ? -6 : 1 - day); // back up to Monday
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
 }
-
-function dateStr(date) {
-  return date.toISOString().split('T')[0];
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
 }
-
-function formatDateRange(start, end) {
-  const startMonth = start.toLocaleString('default', { month: 'short' });
-  const endMonth = end.toLocaleString('default', { month: 'short' });
-  const sameMonth = startMonth === endMonth;
-  if (sameMonth) {
-    return `${startMonth} ${start.getDate()} – ${end.getDate()}`;
+function fmtISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function fmtRange(a, b) {
+  const opts = { month: 'short', day: 'numeric' };
+  const sameMonth = a.getMonth() === b.getMonth();
+  const sameYear = a.getFullYear() === b.getFullYear();
+  if (sameMonth && sameYear) {
+    return `${a.toLocaleDateString(undefined,{month:'short'})} ${a.getDate()} – ${b.getDate()}, ${a.getFullYear()}`;
   }
-  return `${startMonth} ${start.getDate()} – ${endMonth} ${end.getDate()}`;
+  return `${a.toLocaleDateString(undefined,opts)} – ${b.toLocaleDateString(undefined,opts)}, ${b.getFullYear()}`;
+}
+function isToday(d) {
+  const t = new Date();
+  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
 }
 
-function getWeekEnd(monday) {
-  const end = new Date(monday);
-  end.setDate(end.getDate() + 4);
-  return end;
-}
+/* ---------- Current week ---------- */
+let currentWeekStart = startOfWeek(new Date());
 
-/* ---------- State management with undo/redo ---------- */
-function pushHistory() {
-  undoStack.push(JSON.stringify(state));
-  if (undoStack.length > MAX_HISTORY) {
-    undoStack.shift();
-  }
-  redoStack = [];
-  saveSnapshot();
-}
-
-function undo() {
-  if (undoStack.length === 0) return;
-  redoStack.push(JSON.stringify(state));
-  state = JSON.parse(undoStack.pop());
-  render();
-  saveToStorage();
-  showToast('Undone', 'success');
-}
-
-function redo() {
-  if (redoStack.length === 0) return;
-  undoStack.push(JSON.stringify(state));
-  state = JSON.parse(redoStack.pop());
-  render();
-  saveToStorage();
-  showToast('Redone', 'success');
-}
-
-function saveToStorage() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function loadFromStorage() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    state = JSON.parse(stored);
-  }
-}
-
-function saveSnapshot() {
-  let snapshots = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || '[]');
-  snapshots.push({
-    timestamp: new Date().toISOString(),
-    data: JSON.parse(JSON.stringify(state)),
-  });
-  if (snapshots.length > MAX_SNAPSHOTS) {
-    snapshots = snapshots.slice(-MAX_SNAPSHOTS);
-  }
-  localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(snapshots));
-}
-
-const debouncedSnapshot = debounce(saveSnapshot, SNAPSHOT_DEBOUNCE_MS);
-
-/* ---------- Backup file sync ---------- */
-async function syncBackupFile() {
-  try {
-    const db = await openDB();
-    const store = db.transaction(HANDLE_DB_STORE).objectStore(HANDLE_DB_STORE);
-    const request = store.get(HANDLE_KEY);
-    request.onsuccess = async () => {
-      const handle = request.result;
-      if (handle && handle.file) {
-        try {
-          const writable = await handle.file.createWritable();
-          await writable.write(JSON.stringify(state, null, 2));
-          await writable.close();
-          
-          // Update last sync time
-          const syncKey = STORAGE_KEY + '.lastSync';
-          localStorage.setItem(syncKey, new Date().toISOString());
-          
-          updateBackupFileStatus();
-        } catch(e) {
-          console.error('Backup sync error:', e);
-        }
-      }
-    };
-  } catch(e) {
-    console.error('DB error:', e);
-  }
-}
-
-const debouncedBackupSync = debounce(syncBackupFile, FS_DEBOUNCE_MS);
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(HANDLE_DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore(HANDLE_DB_STORE);
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-/* ---------- Week summary ---------- */
-function renderWeekSummary() {
-  const summary = document.getElementById('weekSummary');
-  if (!summary) return;
-
-  const weekKey = dateStr(viewWeekStart);
-  const weekData = state.weeks[weekKey] || {};
-  
-  let lessonCount = 0;
-  let hwCount = 0;
-  
-  for (let p of state.settings.periods) {
-    for (let d = 0; d < 5; d++) {
-      const key = `${p.id}:${d}`;
-      const lesson = weekData[key];
-      if (lesson && lesson.topic) lessonCount++;
-      if (lesson && lesson.hw) hwCount++;
-    }
-  }
-  
-  const dueTasks = state.tasks.filter(t => {
-    if (!t.due) return false;
-    const dueDate = new Date(t.due);
-    const weekEnd = getWeekEnd(viewWeekStart);
-    return dueDate >= viewWeekStart && dueDate <= weekEnd;
-  }).length;
-  
-  const completedTasks = state.tasks.filter(t => t.done).length;
-  const totalTasks = state.tasks.length;
-  const taskProgress = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
-  
-  summary.innerHTML = `
-    <div class="summary-stat">
-      <div class="summary-stat-value">${lessonCount}</div>
-      <div class="summary-stat-label">Lessons</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-value">${hwCount}</div>
-      <div class="summary-stat-label">Assignments</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-value">${dueTasks}</div>
-      <div class="summary-stat-label">Due This Week</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-value">${taskProgress}%</div>
-      <div class="summary-stat-label">Tasks Done</div>
-    </div>
-  `;
-}
-
-/* ---------- Task progress bar ---------- */
-function renderTaskProgress() {
-  const progress = document.getElementById('taskProgress');
-  if (!progress) return;
-  
-  const total = state.tasks.length;
-  const done = state.tasks.filter(t => t.done).length;
-  const percent = total ? Math.round((done / total) * 100) : 0;
-  
-  progress.innerHTML = `
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: ${percent}%"></div>
-    </div>
-    <div class="progress-text">${done} of ${total} tasks completed</div>
-  `;
-}
-
-/* ---------- Task sorting ---------- */
-function getSortedTasks(tasks) {
-  const sorted = [...tasks];
-  
-  if (taskSortBy === 'due-date') {
-    sorted.sort((a, b) => {
-      if (!a.due && !b.due) return 0;
-      if (!a.due) return 1;
-      if (!b.due) return -1;
-      return new Date(a.due) - new Date(b.due);
-    });
-  } else if (taskSortBy === 'priority') {
-    const priorityMap = { high: 0, med: 1, low: 2 };
-    sorted.sort((a, b) => priorityMap[a.priority] - priorityMap[b.priority]);
-  } else if (taskSortBy === 'alpha') {
-    sorted.sort((a, b) => a.title.localeCompare(b.title));
-  }
-  
-  return sorted;
-}
-
-function renderTaskSortControls() {
-  const controls = document.getElementById('taskSortControls');
-  if (!controls) return;
-  
-  controls.innerHTML = `
-    <button class="filter-chip ${taskSortBy === 'due-date' ? 'active' : ''}" data-sort="due-date">
-      📅 Due Date
-    </button>
-    <button class="filter-chip ${taskSortBy === 'priority' ? 'active' : ''}" data-sort="priority">
-      ⚡ Priority
-    </button>
-    <button class="filter-chip ${taskSortBy === 'alpha' ? 'active' : ''}" data-sort="alpha">
-      A-Z Name
-    </button>
-  `;
-  
-  controls.querySelectorAll('[data-sort]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      taskSortBy = btn.dataset.sort;
-      renderTasks();
-    });
-  });
-}
-
-/* ---------- Initialize ---------- */
-initDarkMode();
-loadFromStorage();
-
-// Event listeners
-document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
-document.getElementById('helpBtn').addEventListener('click', () => {
-  document.getElementById('helpModal').classList.add('show');
-});
-
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-  if (e.key === '?') {
-    document.getElementById('helpModal').classList.add('show');
-  }
-  if (e.ctrlKey || e.metaKey) {
-    if (e.key === 'z') {
-      e.preventDefault();
-      undo();
-    }
-    if (e.key === 'y' || (e.shiftKey && e.key === 'Z')) {
-      e.preventDefault();
-      redo();
-    }
-  }
-});
-
-document.querySelectorAll('[data-close]').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.target.closest('.modal-backdrop').classList.remove('show');
-  });
-});
-
-// Close modals on backdrop click
-document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) {
-      backdrop.classList.remove('show');
-    }
-  });
-});
-
-// Keyboard close
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-backdrop.show').forEach(m => {
-      m.classList.remove('show');
-    });
-  }
-});
-
-// Toast notifications
-function showToast(message, type = 'default', undo = null) {
+/* ---------- Toasts ---------- */
+function toast(msg, opts = {}) {
   const stack = document.getElementById('toastStack');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  
-  if (undo) {
-    const undoBtn = document.createElement('button');
-    undoBtn.className = 'undo';
-    undoBtn.textContent = 'Undo';
-    undoBtn.onclick = undo;
-    toast.appendChild(undoBtn);
+  if (!stack) return;
+  const el = document.createElement('div');
+  el.className = 'toast' + (opts.kind ? ' ' + opts.kind : '');
+  el.textContent = msg;
+  if (opts.undo && typeof opts.onUndo === 'function') {
+    const btn = document.createElement('button');
+    btn.className = 'undo';
+    btn.textContent = 'Undo';
+    btn.addEventListener('click', () => {
+      opts.onUndo();
+      hide();
+    });
+    el.appendChild(btn);
   }
-  
-  stack.appendChild(toast);
-  setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 200);
-  }, 3000);
+  stack.appendChild(el);
+  // animate in
+  requestAnimationFrame(() => el.classList.add('show'));
+  let timer;
+  const hide = () => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 200);
+    clearTimeout(timer);
+  };
+  timer = setTimeout(hide, opts.duration || (opts.undo ? 5000 : 2200));
 }
 
-// Main render function (placeholder - rest of code continues)
-function render() {
-  renderWeekSummary();
-  renderTaskProgress();
-  renderTaskSortControls();
-  // ... existing render functions ...
+/* ---------- Lesson copy/move helpers ---------- */
+function cloneLesson(l) { return l ? JSON.parse(JSON.stringify(l)) : null; }
+function getLesson(dateKey, periodId) {
+  return state.lessons[dateKey] && state.lessons[dateKey][periodId];
+}
+function setLesson(dateKey, periodId, lesson) {
+  if (lesson == null) {
+    if (state.lessons[dateKey]) {
+      delete state.lessons[dateKey][periodId];
+      if (Object.keys(state.lessons[dateKey]).length === 0) delete state.lessons[dateKey];
+    }
+  } else {
+    if (!state.lessons[dateKey]) state.lessons[dateKey] = {};
+    state.lessons[dateKey][periodId] = lesson;
+  }
+}
+function lessonIsEmpty(l) {
+  if (!l) return true;
+  return !l.topic && !l.notes && !l.hw && !l.classOverride;
 }
 
-// Initialize on load
-document.addEventListener('DOMContentLoaded', () => {
-  initDarkMode();
-  loadFromStorage();
-  render();
-  saveSnapshot();
+/* ---------- Class resolution ---------- */
+// Read-only accessors so the rest of the code never inspects the override sentinel directly.
+function getRecurringClassId(periodId, dayIdx) {
+  const row = state.settings.recurring[periodId];
+  return (row && row[dayIdx]) || null;
+}
+function getEffectiveClassId(lesson, periodId, dayIdx) {
+  if (lesson && lesson.classOverride === CLASS_FREE) return null;
+  if (lesson && lesson.classOverride) return lesson.classOverride;
+  return getRecurringClassId(periodId, dayIdx);
+}
+function isExplicitFree(lesson) {
+  return !!lesson && lesson.classOverride === CLASS_FREE;
+}
+// Translate a lesson-modal dropdown value into the value that should land in storage.
+// Pass the recurring class id for this slot so picking that same class collapses
+// to "inherit" rather than redundantly storing an override.
+function normalizeOverride(selectValue, recurringClassId) {
+  if (selectValue === CLASS_FREE) return recurringClassId ? CLASS_FREE : '';
+  if (!selectValue || selectValue === CLASS_DEFAULT) return '';
+  if (selectValue === recurringClassId) return '';
+  return selectValue;
+}
+
+/* ---------- Central commit ---------- */
+// All state writes funnel through here so we can never forget to save() or re-render.
+// commit(mutator, opts) → runs mutator, persists to localStorage, then re-renders the
+// surfaces named in opts. By default only the schedule re-renders; pass tasks:true /
+// settings:true to additionally re-render those.
+function commit(mutator, opts = {}) {
+  const { schedule = true, tasks = false, settings = false } = opts;
+  if (typeof mutator === 'function') mutator();
+  save();
+  if (schedule) renderSchedule();
+  if (tasks) renderTasks();
+  if (settings) openSettings();
+  scheduleSnapshot();
+  scheduleFsBackup();
+}
+
+/* ---------- Auto-snapshot history ----------
+   Every commit schedules a snapshot 5s later (timer resets on each new commit, so
+   bursts of edits collapse into one snapshot). We keep up to MAX_SNAPSHOTS in
+   localStorage under SNAPSHOTS_KEY. Restore from the Backups list in Settings.
+   This protects against bad imports, accidental deletions, settings mishaps, etc.
+   It does NOT protect against losing the browser data itself — for that, export
+   periodically or use the File System Access "linked backup" feature (TBD). */
+let snapshotTimer = null;
+function scheduleSnapshot() {
+  clearTimeout(snapshotTimer);
+  snapshotTimer = setTimeout(takeSnapshot, SNAPSHOT_DEBOUNCE_MS);
+}
+function loadSnapshots() {
+  try {
+    const raw = localStorage.getItem(SNAPSHOTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) { return []; }
+}
+function writeSnapshots(list) {
+  // Try to save; if quota exceeded, drop oldest until it fits or list is empty.
+  while (list.length > 0) {
+    try {
+      localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list));
+      return true;
+    } catch (_) {
+      list.pop();
+    }
+  }
+  return false;
+}
+function takeSnapshot() {
+  try {
+    const list = loadSnapshots();
+    const currentJson = JSON.stringify(state);
+    // Skip if no change since the most recent snapshot.
+    if (list.length && list[0].data === currentJson) return;
+    list.unshift({ at: Date.now(), data: currentJson });
+    while (list.length > MAX_SNAPSHOTS) list.pop();
+    writeSnapshots(list);
+  } catch (e) {
+    console.warn('snapshot failed', e);
+  }
+  // If the Backups list is currently visible, refresh it.
+  if (document.getElementById('settingsModal').classList.contains('show')) {
+    renderSnapshotsList();
+  }
+}
+function restoreSnapshot(at) {
+  const snap = loadSnapshots().find(s => s.at === at);
+  if (!snap) return;
+  let restored;
+  try { restored = JSON.parse(snap.data); }
+  catch (_) { toast('That backup is corrupted — skipping.', { kind: 'error' }); return; }
+  const before = JSON.parse(JSON.stringify(state));
+  commit(() => {
+    state = restored;
+    sortPeriodsChronologically();
+  }, { tasks: true, settings: true });
+  toast(`Restored backup from ${formatRelative(at)}`, {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => { state = before; }, { tasks: true, settings: true });
+    },
+  });
+}
+function formatRelative(ts) {
+  const diff = Date.now() - ts;
+  const sec = Math.floor(diff / 1000);
+  if (sec < 30)   return 'just now';
+  if (sec < 60)   return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60)   return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24)    return `${hr} hour${hr === 1 ? '' : 's'} ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7)    return `${day} day${day === 1 ? '' : 's'} ago`;
+  return new Date(ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+function formatBytes(n) {
+  if (n < 1024) return n + ' B';
+  return (n / 1024).toFixed(1) + ' KB';
+}
+function renderSnapshotsList() {
+  const root = document.getElementById('snapshotsList');
+  if (!root) return;
+  const list = loadSnapshots();
+  if (list.length === 0) {
+    root.innerHTML = `<div class="snapshots-empty">No backups yet — the first one appears about ${SNAPSHOT_DEBOUNCE_MS / 1000} seconds after your next change.</div>`;
+    return;
+  }
+  root.innerHTML = list.map(s => `
+    <div class="snapshot-row">
+      <div>
+        <div class="snapshot-time">${formatRelative(s.at)}</div>
+        <div class="snapshot-meta">${formatBytes(s.data.length)} · ${new Date(s.at).toLocaleString()}</div>
+      </div>
+      <button class="btn ghost" data-at="${s.at}">Restore</button>
+    </div>
+  `).join('');
+  root.querySelectorAll('button[data-at]').forEach(btn => {
+    btn.addEventListener('click', () => restoreSnapshot(parseInt(btn.dataset.at, 10)));
+  });
+}
+
+/* ---------- Linked backup file (File System Access API) ----------
+   User picks a JSON file once via the system save dialog. The handle is stored in
+   IndexedDB so it survives reloads. After that, every commit silently writes the
+   current state to that file (debounced, like snapshots). Best when the chosen
+   file lives inside a OneDrive/iCloud/Drive-synced folder so the backup is also
+   off-machine. Only supported on Chromium browsers (Chrome / Edge / Opera /
+   Brave). On Firefox/Safari the UI shows an "unsupported" message instead. */
+let backupFileHandle = null;
+let lastFsBackupAt = null;
+let fsBackupTimer = null;
+const fsSupported = typeof window !== 'undefined' && 'showSaveFilePicker' in window;
+
+function openHandleDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(HANDLE_DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(HANDLE_DB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function loadStoredHandle() {
+  if (!fsSupported) return null;
+  try {
+    const db = await openHandleDB();
+    return await new Promise(resolve => {
+      const tx = db.transaction(HANDLE_DB_STORE, 'readonly');
+      const req = tx.objectStore(HANDLE_DB_STORE).get(HANDLE_KEY);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror   = () => resolve(null);
+    });
+  } catch (_) { return null; }
+}
+async function saveHandle(handle) {
+  try {
+    const db = await openHandleDB();
+    await new Promise(resolve => {
+      const tx = db.transaction(HANDLE_DB_STORE, 'readwrite');
+      tx.objectStore(HANDLE_DB_STORE).put(handle, HANDLE_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror    = () => resolve();
+    });
+  } catch (_) {}
+}
+async function clearStoredHandle() {
+  try {
+    const db = await openHandleDB();
+    await new Promise(resolve => {
+      const tx = db.transaction(HANDLE_DB_STORE, 'readwrite');
+      tx.objectStore(HANDLE_DB_STORE).delete(HANDLE_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror    = () => resolve();
+    });
+  } catch (_) {}
+}
+async function ensureWritePermission(handle) {
+  if (!handle || !handle.queryPermission) return false;
+  let perm = await handle.queryPermission({ mode: 'readwrite' });
+  if (perm === 'granted') return true;
+  perm = await handle.requestPermission({ mode: 'readwrite' });
+  return perm === 'granted';
+}
+async function writeBackupFile(opts = {}) {
+  if (!backupFileHandle) return;
+  const interactive = opts.interactive !== false;
+  try {
+    let granted;
+    if (interactive) {
+      granted = await ensureWritePermission(backupFileHandle);
+    } else {
+      // Quietly check; never prompt. If permission isn't already granted, skip.
+      const perm = await backupFileHandle.queryPermission({ mode: 'readwrite' });
+      granted = (perm === 'granted');
+    }
+    if (!granted) {
+      renderBackupStatus();
+      return;
+    }
+    const writable = await backupFileHandle.createWritable();
+    await writable.write(JSON.stringify(state, null, 2));
+    await writable.close();
+    lastFsBackupAt = Date.now();
+    renderBackupStatus();
+  } catch (e) {
+    console.warn('backup write failed', e);
+    if (interactive) toast('Backup file write failed: ' + e.message, { kind: 'error', duration: 4000 });
+    renderBackupStatus();
+  }
+}
+function scheduleFsBackup() {
+  if (!backupFileHandle) return;
+  clearTimeout(fsBackupTimer);
+  // Quiet write (no permission prompt); the user grants once via the connect/write-now buttons.
+  fsBackupTimer = setTimeout(() => writeBackupFile({ interactive: false }), FS_DEBOUNCE_MS);
+}
+async function connectBackupFile() {
+  if (!fsSupported) {
+    toast('Linked backup needs Chrome, Edge, or Opera (your browser doesn\'t support it).', { kind: 'error', duration: 5000 });
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'teacher-planner-backup.json',
+      types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }],
+    });
+    backupFileHandle = handle;
+    await saveHandle(handle);
+    await writeBackupFile({ interactive: true });
+    toast(`Linked: ${handle.name}`, { kind: 'success' });
+  } catch (e) {
+    if (e.name === 'AbortError') return; // user cancelled the dialog
+    toast('Could not link backup file: ' + e.message, { kind: 'error' });
+  }
+  renderBackupStatus();
+}
+async function disconnectBackupFile() {
+  backupFileHandle = null;
+  lastFsBackupAt = null;
+  await clearStoredHandle();
+  toast('Backup file disconnected', { kind: 'success' });
+  renderBackupStatus();
+}
+function renderBackupStatus() {
+  const el = document.getElementById('backupFileStatus');
+  if (!el) return;
+  if (!fsSupported) {
+    el.innerHTML = `<div class="bf-row bf-unsupported">Your browser doesn't support linked backup files. Use Chrome, Edge, or Opera, or rely on the snapshot history below + periodic ↓ Export.</div>`;
+    return;
+  }
+  if (!backupFileHandle) {
+    el.innerHTML = `
+      <div class="bf-row bf-disconnected">
+        <div>
+          <div class="bf-name">Not connected</div>
+          <div class="bf-meta">Pick a <code>.json</code> file (ideally inside a OneDrive / iCloud / Drive folder) and the planner will keep it in sync automatically.</div>
+        </div>
+        <button class="btn primary" id="bfConnect">Connect backup file</button>
+      </div>
+    `;
+    document.getElementById('bfConnect').onclick = connectBackupFile;
+    return;
+  }
+  const lastInfo = lastFsBackupAt
+    ? `Last write: ${formatRelative(lastFsBackupAt)}`
+    : 'Connected — first write will run on your next change.';
+  el.innerHTML = `
+    <div class="bf-row bf-connected">
+      <div>
+        <div class="bf-name">Linked: <strong>${escapeHtml(backupFileHandle.name)}</strong></div>
+        <div class="bf-meta">${lastInfo}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn ghost" id="bfWriteNow" title="Force a write right now">Write now</button>
+        <button class="btn danger" id="bfDisconnect">Disconnect</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('bfWriteNow').onclick = () => writeBackupFile({ interactive: true });
+  document.getElementById('bfDisconnect').onclick = disconnectBackupFile;
+}
+async function initBackupFile() {
+  if (!fsSupported) { renderBackupStatus(); return; }
+  backupFileHandle = await loadStoredHandle();
+  renderBackupStatus();
+}
+
+/* ---------- Derived UI sync ---------- */
+// Things that depend on settings/dates but live outside the main schedule grid.
+function syncDerivedUI() {
+  const taskClsSel = document.getElementById('newTaskClass');
+  if (taskClsSel) {
+    const cur = taskClsSel.value;
+    populateClassSelect(taskClsSel, cur);
+  }
+  const sp = document.querySelector('#schedulePanel .panel-header h2');
+  if (sp) sp.dataset.printWeek = fmtRange(currentWeekStart, addDays(currentWeekStart, 4));
+  const subEl = document.getElementById('userTag');
+  if (subEl) subEl.textContent = state.settings.subtitle || '';
+}
+
+/* ---------- Week navigation ---------- */
+function setWeek(start) {
+  currentWeekStart = start;
+  renderSchedule();
+  renderTasks();
+}
+function goPrev()  { setWeek(addDays(currentWeekStart, -7)); }
+function goNext()  { setWeek(addDays(currentWeekStart, 7));  }
+function goToday() { setWeek(startOfWeek(new Date()));        }
+function moveLesson(srcDate, srcPid, dstDate, dstPid, isCopy) {
+  if (srcDate === dstDate && srcPid === dstPid) return;
+  const src = cloneLesson(getLesson(srcDate, srcPid));
+  if (lessonIsEmpty(src)) return;
+  const dst = cloneLesson(getLesson(dstDate, dstPid));
+
+  // Snapshot for undo
+  const undoSnap = {
+    src: cloneLesson(getLesson(srcDate, srcPid)),
+    dst: cloneLesson(getLesson(dstDate, dstPid)),
+  };
+
+  commit(() => {
+    if (isCopy) {
+      setLesson(dstDate, dstPid, src);
+    } else {
+      setLesson(dstDate, dstPid, src);
+      setLesson(srcDate, srcPid, lessonIsEmpty(dst) ? null : dst);
+    }
+  });
+  toast(isCopy ? 'Lesson copied' : (lessonIsEmpty(dst) ? 'Lesson moved' : 'Lessons swapped'), {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => {
+        setLesson(srcDate, srcPid, lessonIsEmpty(undoSnap.src) ? null : undoSnap.src);
+        setLesson(dstDate, dstPid, lessonIsEmpty(undoSnap.dst) ? null : undoSnap.dst);
+      });
+    },
+  });
+}
+
+/* ---------- Copy current week to next ---------- */
+function copyWeekToNext() {
+  const src = currentWeekStart;
+  const dst = addDays(currentWeekStart, 7);
+  let srcCount = 0, dstCount = 0;
+  const srcKeys = [], dstKeys = [];
+  for (let i = 0; i < 5; i++) {
+    const sd = fmtISO(addDays(src, i));
+    const dd = fmtISO(addDays(dst, i));
+    srcKeys.push(sd); dstKeys.push(dd);
+    if (state.lessons[sd]) srcCount += Object.keys(state.lessons[sd]).length;
+    if (state.lessons[dd]) dstCount += Object.keys(state.lessons[dd]).length;
+  }
+  if (srcCount === 0) { toast('Nothing to copy — this week has no planned lessons.', { kind: 'error' }); return; }
+  if (dstCount > 0 && !confirm(`Next week already has ${dstCount} planned lesson(s). Replace them?`)) return;
+
+  // snapshot for undo
+  const undoSnap = {};
+  dstKeys.forEach(k => { undoSnap[k] = cloneLesson(state.lessons[k]); });
+
+  commit(() => {
+    dstKeys.forEach(k => { delete state.lessons[k]; });
+    srcKeys.forEach((sd, i) => {
+      if (state.lessons[sd]) state.lessons[dstKeys[i]] = cloneLesson(state.lessons[sd]);
+    });
+  });
+  toast(`Copied ${srcCount} lesson(s) to next week`, {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => {
+        dstKeys.forEach(k => {
+          if (undoSnap[k]) state.lessons[k] = undoSnap[k];
+          else delete state.lessons[k];
+        });
+      });
+    },
+  });
+}
+
+/* ---------- Jump to date ---------- */
+function jumpToDate(dateStr) {
+  if (!dateStr) return;
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return;
+  setWeek(startOfWeek(d));
+}
+
+/* ---------- Render: Schedule ---------- */
+function classById(id) { return state.settings.classes.find(c => c.id === id); }
+function periodById(id) { return state.settings.periods.find(p => p.id === id); }
+
+function renderSchedule() {
+  const thead = document.querySelector('#scheduleTable thead');
+  const tbody = document.querySelector('#scheduleTable tbody');
+  thead.innerHTML = '';
+  tbody.innerHTML = '';
+
+  // header row
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="width:110px;">When</th>';
+  for (let i = 0; i < 5; i++) {
+    const d = addDays(currentWeekStart, i);
+    const today = isToday(d);
+    headRow.innerHTML += `<th class="${today ? 'today' : ''}">${DAYS[i]} <span class="day-num">${d.getDate()}</span></th>`;
+  }
+  thead.appendChild(headRow);
+
+  // body rows
+  for (const period of state.settings.periods) {
+    const tr = document.createElement('tr');
+    const periodTd = document.createElement('td');
+    periodTd.className = 'period-col';
+    periodTd.innerHTML = `
+      <div class="period-name">${escapeHtml(period.name)}</div>
+      <div class="period-time">${period.start || ''}${period.start && period.end ? ' – ' : ''}${period.end || ''}</div>
+    `;
+    tr.appendChild(periodTd);
+
+    for (let i = 0; i < 5; i++) {
+      const d = addDays(currentWeekStart, i);
+      const dateKey = fmtISO(d);
+      const today = isToday(d);
+      const td = document.createElement('td');
+      td.className = 'cell' + (today ? ' today' : '');
+      td.dataset.date = dateKey;
+      td.dataset.periodId = period.id;
+      td.dataset.dayIdx = i;
+
+      const lesson = getLesson(dateKey, period.id) || {};
+      const hasLessonContent = !lessonIsEmpty(lesson);
+      const isFree = isExplicitFree(lesson);
+      const classId = getEffectiveClassId(lesson, period.id, i);
+      const cls = classById(classId);
+
+      if (cls) {
+        td.classList.add('has-class');
+        td.style.setProperty('--cell-color', cls.color);
+      }
+
+      let html = '<div class="cell-inner">';
+      if (cls) {
+        html += `<div class="cell-class"><span class="swatch" style="background:${escapeAttr(cls.color)}"></span>${escapeHtml(cls.name)}</div>`;
+      } else if (isFree) {
+        html += `<div class="cell-class" style="color:var(--muted);font-weight:500;"><span class="swatch" style="background:transparent;border:1px dashed var(--muted-2);"></span>Free</div>`;
+      } else if (!lesson.topic) {
+        html += `<div class="cell-empty">+ add</div>`;
+      }
+      if (lesson.topic) {
+        html += `<div class="cell-topic">${escapeHtml(lesson.topic)}</div>`;
+      }
+      if (lesson.hw) {
+        html += `<div class="cell-hw">⚐ HW</div>`;
+      }
+      html += '</div>';
+      // Override dot: indicates this slot has explicit content overriding the recurring default
+      if (lesson.classOverride || lesson.topic || lesson.notes || lesson.hw) {
+        html += `<span class="cell-override-dot" title="This slot has custom content"></span>`;
+      }
+      td.innerHTML = html;
+      td.addEventListener('click', () => openLessonModal(dateKey, period.id, i));
+      if (hasLessonContent) {
+        td.draggable = true;
+        attachCellDragSource(td, dateKey, period.id);
+      }
+      attachCellDropTarget(td, dateKey, period.id);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('weekLabel').textContent = fmtRange(currentWeekStart, addDays(currentWeekStart, 4));
+  syncDerivedUI();
+}
+
+/* ---------- Cell drag & drop ---------- */
+let dragSourceCell = null;
+function attachCellDragSource(td, dateKey, periodId) {
+  td.addEventListener('dragstart', e => {
+    dragSourceCell = { dateKey, periodId };
+    td.classList.add('cell-dragging');
+    e.dataTransfer.effectAllowed = 'copyMove';
+    try { e.dataTransfer.setData('text/plain', `${dateKey}|${periodId}`); } catch (_) {}
+  });
+  td.addEventListener('dragend', () => {
+    td.classList.remove('cell-dragging');
+    document.querySelectorAll('.cell-drop-target').forEach(el => el.classList.remove('cell-drop-target'));
+    setTimeout(() => { dragSourceCell = null; }, 50);
+  });
+}
+function attachCellDropTarget(td, dateKey, periodId) {
+  td.addEventListener('dragover', e => {
+    if (!dragSourceCell) return;
+    if (dragSourceCell.dateKey === dateKey && dragSourceCell.periodId === periodId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = (e.ctrlKey || e.metaKey) ? 'copy' : 'move';
+    td.classList.add('cell-drop-target');
+  });
+  td.addEventListener('dragleave', () => td.classList.remove('cell-drop-target'));
+  td.addEventListener('drop', e => {
+    e.preventDefault();
+    td.classList.remove('cell-drop-target');
+    if (!dragSourceCell) return;
+    const isCopy = e.ctrlKey || e.metaKey;
+    moveLesson(dragSourceCell.dateKey, dragSourceCell.periodId, dateKey, periodId, isCopy);
+    dragSourceCell = null;
+  });
+}
+/* ---------- Render: Tasks ---------- */
+let currentTaskFilter = 'all';
+
+function tasksFiltered() {
+  const today = fmtISO(new Date());
+  return state.tasks.filter(t => {
+    if (currentTaskFilter === 'all') return true;
+    if (currentTaskFilter === 'today') return t.due === today && !t.done;
+    if (currentTaskFilter === 'week') {
+      if (t.done) return false;
+      if (!t.due) return false;
+      const wkStart = fmtISO(currentWeekStart);
+      const wkEnd = fmtISO(addDays(currentWeekStart, 4));
+      return t.due >= wkStart && t.due <= wkEnd;
+    }
+    if (currentTaskFilter === 'overdue') {
+      if (t.done || !t.due) return false;
+      return t.due < today;
+    }
+    if (currentTaskFilter === 'done') return t.done;
+    return true;
+  }).sort((a, b) => {
+    // unfinished first, then by due date
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.due && b.due) return a.due.localeCompare(b.due);
+    if (a.due) return -1;
+    if (b.due) return 1;
+    return b.created - a.created;
+  });
+}
+
+function renderTaskFilters() {
+  const today = fmtISO(new Date());
+  const wkStart = fmtISO(currentWeekStart);
+  const wkEnd = fmtISO(addDays(currentWeekStart, 4));
+  const counts = {
+    all: state.tasks.filter(t => !t.done).length,
+    today: state.tasks.filter(t => !t.done && t.due === today).length,
+    week: state.tasks.filter(t => !t.done && t.due && t.due >= wkStart && t.due <= wkEnd).length,
+    overdue: state.tasks.filter(t => !t.done && t.due && t.due < today).length,
+    done: state.tasks.filter(t => t.done).length,
+  };
+  const filters = [
+    ['all', 'All'],
+    ['today', 'Today'],
+    ['week', 'This week'],
+    ['overdue', 'Overdue'],
+    ['done', 'Done'],
+  ];
+  const root = document.getElementById('taskFilters');
+  root.innerHTML = '';
+  filters.forEach(([k, label]) => {
+    const b = document.createElement('button');
+    b.className = 'filter-chip' + (currentTaskFilter === k ? ' active' : '');
+    b.innerHTML = `${label}<span class="count">${counts[k]}</span>`;
+    b.onclick = () => { currentTaskFilter = k; renderTasks(); };
+    root.appendChild(b);
+  });
+}
+
+function renderTasks() {
+  renderTaskFilters();
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  const items = tasksFiltered();
+  const today = fmtISO(new Date());
+  for (const t of items) {
+    const li = document.createElement('li');
+    li.className = 'task-item' + (t.done ? ' done' : '');
+    let dueLabel = '';
+    let dueClass = '';
+    if (t.due) {
+      if (!t.done && t.due < today) { dueClass = 'due-overdue'; dueLabel = `Overdue · ${formatDueLabel(t.due)}`; }
+      else if (t.due === today) { dueClass = 'due-today'; dueLabel = `Due today`; }
+      else { dueLabel = formatDueLabel(t.due); }
+    }
+    const prClass = `priority-${t.priority || 'med'}`;
+    const prLabel = ({ low: 'Low', med: 'Med', high: 'High' })[t.priority || 'med'];
+    const linkedCls = t.classId ? classById(t.classId) : null;
+    const classPill = linkedCls
+      ? `<span class="pill class-pill" style="color:${escapeAttr(linkedCls.color)}">${escapeHtml(linkedCls.name)}</span>`
+      : '';
+    li.innerHTML = `
+      <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="toggle done" />
+      <div class="task-body">
+        <div class="task-title"></div>
+        <div class="task-meta">
+          ${dueLabel ? `<span class="pill ${dueClass}">${dueLabel}</span>` : ''}
+          <span class="pill ${prClass}">${prLabel}</span>
+          ${classPill}
+        </div>
+      </div>
+      <button class="icon-btn task-del" title="Delete">✕</button>
+    `;
+    li.querySelector('.task-title').textContent = t.title;
+    li.querySelector('input').addEventListener('change', e => {
+      commit(() => { t.done = e.target.checked; }, { schedule: false, tasks: true });
+    });
+    li.querySelector('.task-body').addEventListener('click', () => openTaskModal(t.id));
+    li.querySelector('.task-del').addEventListener('click', e => {
+      e.stopPropagation();
+      // Delete with undo via toast — no scary confirm() popup
+      const idx = state.tasks.findIndex(x => x.id === t.id);
+      if (idx === -1) return;
+      const removed = state.tasks[idx];
+      commit(() => state.tasks.splice(idx, 1), { schedule: false, tasks: true });
+      toast(`Deleted "${removed.title}"`, {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => state.tasks.splice(Math.min(idx, state.tasks.length), 0, removed),
+                 { schedule: false, tasks: true });
+        },
+      });
+    });
+    list.appendChild(li);
+  }
+  const total = state.tasks.length;
+  const open = state.tasks.filter(t => !t.done).length;
+  document.getElementById('tasksMeta').textContent = `${open} open · ${total} total`;
+}
+
+function formatDueLabel(due) {
+  const d = new Date(due + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((d - today) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
+  if (diff > 1 && diff < 7) return d.toLocaleDateString(undefined, { weekday: 'short' });
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+/* ---------- Lesson modal ---------- */
+let lessonCtx = null;
+function openLessonModal(dateKey, periodId, dayIdx) {
+  lessonCtx = { dateKey, periodId, dayIdx };
+  const period = periodById(periodId);
+  const d = new Date(dateKey + 'T00:00:00');
+  document.getElementById('lessonTitle').textContent = period.name;
+  document.getElementById('lessonSub').textContent =
+    `${d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} · ${period.start || ''}${period.end ? '–'+period.end : ''}`;
+
+  // populate class select
+  const sel = document.getElementById('lessonClass');
+  const recurringClass = getRecurringClassId(periodId, dayIdx);
+  const recurringName = recurringClass ? (classById(recurringClass) || {}).name : '';
+  sel.innerHTML = '';
+  // "Use default" only appears when there IS a recurring default to revert to
+  if (recurringClass) {
+    const opt = document.createElement('option');
+    opt.value = CLASS_DEFAULT;
+    opt.textContent = `— Use default (${recurringName}) —`;
+    sel.appendChild(opt);
+  }
+  const noneOpt = document.createElement('option');
+  noneOpt.value = CLASS_FREE;
+  noneOpt.textContent = '— Free period (no class) —';
+  sel.appendChild(noneOpt);
+  for (const c of state.settings.classes) {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = c.name;
+    sel.appendChild(opt);
+  }
+
+  const lesson = getLesson(dateKey, periodId) || {};
+  let initial;
+  if (isExplicitFree(lesson))   initial = CLASS_FREE;
+  else if (lesson.classOverride) initial = lesson.classOverride;
+  else if (recurringClass)       initial = CLASS_DEFAULT;
+  else                           initial = CLASS_FREE;
+  sel.value = initial;
+  document.getElementById('lessonTopic').value = lesson.topic || '';
+  document.getElementById('lessonNotes').value = lesson.notes || '';
+  document.getElementById('lessonHw').value = lesson.hw || '';
+
+  showModal('lessonModal');
+  setTimeout(() => document.getElementById('lessonTopic').focus(), 50);
+}
+
+document.getElementById('lessonSave').addEventListener('click', () => {
+  if (!lessonCtx) return;
+  const { dateKey, periodId, dayIdx } = lessonCtx;
+  const recurringClass = getRecurringClassId(periodId, dayIdx);
+  const classOverride = normalizeOverride(
+    document.getElementById('lessonClass').value,
+    recurringClass
+  );
+  const lesson = {
+    topic: document.getElementById('lessonTopic').value.trim(),
+    notes: document.getElementById('lessonNotes').value.trim(),
+    hw:    document.getElementById('lessonHw').value.trim(),
+    classOverride,
+  };
+  commit(() => setLesson(dateKey, periodId, lessonIsEmpty(lesson) ? null : lesson));
+  hideModal('lessonModal');
 });
 
-// Auto-save and backup sync
-document.addEventListener('change', () => {
-  saveToStorage();
-  debouncedSnapshot();
-  debouncedBackupSync();
+document.getElementById('lessonClear').addEventListener('click', () => {
+  if (!lessonCtx) return;
+  const { dateKey, periodId } = lessonCtx;
+  commit(() => setLesson(dateKey, periodId, null));
+  hideModal('lessonModal');
 });
 
-// Continue with existing code...
-// [All existing schedule, task, lesson modal, settings code here]
+/* ---------- Task modal ---------- */
+let editingTaskId = null;
+function openTaskModal(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  editingTaskId = id;
+  document.getElementById('editTaskTitle').value = t.title;
+  document.getElementById('editTaskDue').value = t.due || '';
+  document.getElementById('editTaskPriority').value = t.priority || 'med';
+  document.getElementById('editTaskNotes').value = t.notes || '';
+  populateClassSelect(document.getElementById('editTaskClass'), t.classId || '');
+  showModal('taskModal');
+  setTimeout(() => document.getElementById('editTaskTitle').focus(), 50);
+}
+document.getElementById('editTaskSave').addEventListener('click', () => {
+  const t = state.tasks.find(x => x.id === editingTaskId);
+  if (!t) return;
+  commit(() => {
+    t.title    = document.getElementById('editTaskTitle').value.trim() || t.title;
+    t.due      = document.getElementById('editTaskDue').value || null;
+    t.priority = document.getElementById('editTaskPriority').value;
+    t.classId  = document.getElementById('editTaskClass').value || null;
+    t.notes    = document.getElementById('editTaskNotes').value.trim();
+  }, { schedule: false, tasks: true });
+  hideModal('taskModal');
+});
+document.getElementById('editTaskDelete').addEventListener('click', () => {
+  const t = state.tasks.find(x => x.id === editingTaskId);
+  if (!t) return;
+  const idx = state.tasks.indexOf(t);
+  commit(() => state.tasks.splice(idx, 1), { schedule: false, tasks: true });
+  hideModal('taskModal');
+  toast(`Deleted "${t.title}"`, {
+    kind: 'success',
+    undo: true,
+    onUndo() {
+      commit(() => state.tasks.splice(Math.min(idx, state.tasks.length), 0, t),
+             { schedule: false, tasks: true });
+    },
+  });
+});
+
+function populateClassSelect(sel, currentValue) {
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— No class —</option>';
+  for (const c of state.settings.classes) {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.name;
+    sel.appendChild(o);
+  }
+  sel.value = currentValue || '';
+}
+
+/* ---------- Add task ---------- */
+document.getElementById('taskAddForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title = document.getElementById('newTaskTitle').value.trim();
+  if (!title) return;
+  const newTask = {
+    id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    title,
+    notes: '',
+    due:      document.getElementById('newTaskDue').value || null,
+    priority: document.getElementById('newTaskPriority').value,
+    classId:  document.getElementById('newTaskClass').value || null,
+    done: false,
+    created: Date.now(),
+  };
+  commit(() => state.tasks.push(newTask), { schedule: false, tasks: true });
+  document.getElementById('newTaskTitle').value = '';
+  document.getElementById('newTaskDue').value = '';
+  document.getElementById('newTaskClass').value = '';
+});
+
+/* ---------- Settings modal ---------- */
+function openSettings() {
+  // Header subtitle
+  const subInput = document.getElementById('subtitleInput');
+  subInput.value = state.settings.subtitle || '';
+  subInput.oninput = () => {
+    commit(() => { state.settings.subtitle = subInput.value; }, { schedule: true });
+  };
+
+  // Periods table
+  const pBody = document.getElementById('periodsBody');
+  pBody.innerHTML = '';
+  state.settings.periods.forEach((p, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" data-k="name" value="${escapeAttr(p.name)}" /></td>
+      <td><input type="time" data-k="start" value="${escapeAttr(p.start || '')}" /></td>
+      <td><input type="time" data-k="end" value="${escapeAttr(p.end || '')}" /></td>
+      <td><button class="icon-btn" title="Remove">✕</button></td>
+    `;
+    // Live-commit each edit
+    tr.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const cur = state.settings.periods[idx];
+        if (!cur) return;
+        commit(() => { cur[inp.dataset.k] = inp.value; });
+      });
+    });
+    tr.querySelector('button').addEventListener('click', () => {
+      if (state.settings.periods.length <= 1) {
+        toast('Keep at least one period.', { kind: 'error' });
+        return;
+      }
+      capturePeriodsFromTable();
+      const removed = state.settings.periods[idx];
+      const removedRecurring = state.settings.recurring[removed.id];
+      commit(() => {
+        state.settings.periods.splice(idx, 1);
+        delete state.settings.recurring[removed.id];
+      }, { settings: true });
+      toast(`Removed "${removed.name}"`, {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => {
+            state.settings.periods.splice(Math.min(idx, state.settings.periods.length), 0, removed);
+            if (removedRecurring) state.settings.recurring[removed.id] = removedRecurring;
+          }, { settings: true });
+        },
+      });
+    });
+    pBody.appendChild(tr);
+  });
+
+  // Classes table
+  const cBody = document.getElementById('classesBody');
+  cBody.innerHTML = '';
+  state.settings.classes.forEach((c, idx) => {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.dataset.idx = idx;
+    tr.innerHTML = `
+      <td class="drag-handle" title="Drag to reorder">≡</td>
+      <td><div class="swatch-input"><input type="color" data-k="color" value="${escapeAttr(c.color || '#2563eb')}" /></div></td>
+      <td><input type="text" data-k="name" value="${escapeAttr(c.name)}" /></td>
+      <td><button class="icon-btn" title="Remove">✕</button></td>
+    `;
+    tr.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const cur = state.settings.classes[idx];
+        if (!cur) return;
+        commit(() => { cur[inp.dataset.k] = inp.value; });
+      });
+    });
+    tr.querySelector('button').addEventListener('click', () => {
+      capturePeriodsFromTable();
+      collectClassesFromTable();
+      const removed = state.settings.classes[idx];
+      commit(() => state.settings.classes.splice(idx, 1), { settings: true });
+      toast(`Removed class "${removed.name}"`, {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => state.settings.classes.splice(Math.min(idx, state.settings.classes.length), 0, removed),
+                 { settings: true });
+        },
+      });
+    });
+    cBody.appendChild(tr);
+  });
+  attachClassesDragAndDrop(cBody);
+
+  // Backups: linked file + snapshot list
+  renderBackupStatus();
+  renderSnapshotsList();
+
+  // Recurring schedule editor
+  renderRecurringEditor();
+  // Live-commit recurring select changes
+  document.querySelectorAll('#recurringTable select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const pid = sel.dataset.pid;
+      const day = parseInt(sel.dataset.day, 10);
+      commit(() => {
+        if (!state.settings.recurring[pid]) state.settings.recurring[pid] = [null,null,null,null,null];
+        state.settings.recurring[pid][day] = sel.value || null;
+      });
+    });
+  });
+
+  showModal('settingsModal');
+}
+
+function capturePeriodsFromTable() {
+  const pBody = document.getElementById('periodsBody');
+  if (!pBody) return;
+  [...pBody.querySelectorAll('tr')].forEach((tr, idx) => {
+    const p = state.settings.periods[idx];
+    if (!p) return;
+    tr.querySelectorAll('input').forEach(inp => { p[inp.dataset.k] = inp.value; });
+  });
+}
+
+// When the settings modal closes, do a final commit + chronological sort.
+function finalizeSettings() {
+  commit(() => {
+    capturePeriodsFromTable();
+    collectClassesFromTable();
+    sortPeriodsChronologically();
+  });
+}
+
+function collectClassesFromTable() {
+  const cBody = document.getElementById('classesBody');
+  if (!cBody) return;
+  const rows = [...cBody.querySelectorAll('tr')];
+  rows.forEach((tr, idx) => {
+    const cls = state.settings.classes[idx];
+    if (!cls) return;
+    tr.querySelectorAll('input').forEach(inp => {
+      cls[inp.dataset.k] = inp.value;
+    });
+  });
+}
+
+function attachClassesDragAndDrop(tbody) {
+  let dragSrcIdx = null;
+
+  const clearMarkers = () => {
+    tbody.querySelectorAll('tr').forEach(r => {
+      r.classList.remove('drag-over-top', 'drag-over-bottom', 'dragging');
+    });
+  };
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('dragstart', e => {
+      dragSrcIdx = parseInt(tr.dataset.idx, 10);
+      tr.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      // required for Firefox
+      try { e.dataTransfer.setData('text/plain', String(dragSrcIdx)); } catch (_) {}
+    });
+
+    tr.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const rect = tr.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over-top','drag-over-bottom'));
+      tr.classList.add(before ? 'drag-over-top' : 'drag-over-bottom');
+    });
+
+    tr.addEventListener('dragleave', () => {
+      tr.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    tr.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetIdx = parseInt(tr.dataset.idx, 10);
+      const rect = tr.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      let insertAt = before ? targetIdx : targetIdx + 1;
+      clearMarkers();
+
+      if (dragSrcIdx == null || dragSrcIdx === targetIdx) return;
+
+      // Pull current input values into state so unsaved edits aren't lost
+      collectClassesFromTable();
+
+      const fromIdx = dragSrcIdx;
+      const adjustedInsertAt = (fromIdx < insertAt) ? insertAt - 1 : insertAt;
+      dragSrcIdx = null;
+      commit(() => {
+        const moved = state.settings.classes.splice(fromIdx, 1)[0];
+        state.settings.classes.splice(adjustedInsertAt, 0, moved);
+      }, { settings: true });
+    });
+
+    tr.addEventListener('dragend', clearMarkers);
+  });
+}
+
+function renderRecurringEditor() {
+  const t = document.getElementById('recurringTable');
+  t.innerHTML = '';
+  // header
+  let html = '<thead><tr><th>Period</th>';
+  for (const d of DAYS) html += `<th>${d}</th>`;
+  html += '</tr></thead><tbody>';
+  for (const p of state.settings.periods) {
+    html += `<tr><th>${escapeHtml(p.name)}</th>`;
+    for (let i = 0; i < 5; i++) {
+      const cur = (state.settings.recurring[p.id] && state.settings.recurring[p.id][i]) || '';
+      html += `<td><select data-pid="${escapeAttr(p.id)}" data-day="${i}"><option value="">—</option>`;
+      for (const c of state.settings.classes) {
+        html += `<option value="${escapeAttr(c.id)}" ${cur===c.id?'selected':''}>${escapeHtml(c.name)}</option>`;
+      }
+      html += '</select></td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+document.getElementById('addPeriodBtn').addEventListener('click', () => {
+  capturePeriodsFromTable();
+  const pidNum = state.settings.periods.length + 1;
+  commit(() => {
+    state.settings.periods.push({
+      id: 'p_' + Date.now().toString(36),
+      name: 'Period ' + pidNum,
+      start: '', end: ''
+    });
+  }, { settings: true });
+});
+document.getElementById('addClassBtn').addEventListener('click', () => {
+  capturePeriodsFromTable();
+  collectClassesFromTable();
+  const palette = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+  commit(() => {
+    state.settings.classes.push({
+      id: 'c_' + Date.now().toString(36),
+      name: 'New class',
+      color: palette[state.settings.classes.length % palette.length],
+    });
+  }, { settings: true });
+});
+
+function sortPeriodsChronologically() {
+  // Stable sort: parse "HH:MM" → minutes; missing/invalid values sort to the end.
+  const toMinutes = t => {
+    if (!t || typeof t !== 'string') return Infinity;
+    const m = t.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return Infinity;
+    const h = parseInt(m[1], 10), mm = parseInt(m[2], 10);
+    if (isNaN(h) || isNaN(mm)) return Infinity;
+    return h * 60 + mm;
+  };
+  // decorate-sort-undecorate to keep stability across engines
+  state.settings.periods = state.settings.periods
+    .map((p, i) => ({ p, i, k: toMinutes(p.start) }))
+    .sort((a, b) => a.k - b.k || a.i - b.i)
+    .map(x => x.p);
+}
+
+/* ---------- Modal helpers ---------- */
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function hideModal(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.remove('show');
+  if (id === 'settingsModal') finalizeSettings();
+}
+function closeModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.classList.remove('show');
+  if (modalEl.id === 'settingsModal') finalizeSettings();
+}
+document.querySelectorAll('.modal-backdrop').forEach(b => {
+  b.addEventListener('click', e => { if (e.target === b) closeModal(b); });
+});
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.closest('.modal-backdrop')));
+});
+
+/* ---------- Global keyboard shortcuts ---------- */
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+document.addEventListener('keydown', e => {
+  // Esc closes any open modal
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop.show').forEach(m => closeModal(m));
+    return;
+  }
+  // Ctrl/Cmd+Enter saves the topmost modal (clicks its primary button)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    const open = [...document.querySelectorAll('.modal-backdrop.show')].pop();
+    if (open) {
+      e.preventDefault();
+      const primary = open.querySelector('.modal-foot .btn.primary:not([data-close])');
+      if (primary) primary.click();
+      else closeModal(open);
+    }
+    return;
+  }
+  // Ignore other shortcuts when typing
+  if (isTypingTarget(e.target)) return;
+  if (document.querySelector('.modal-backdrop.show')) return;
+
+  if (e.key === 'ArrowLeft')                goPrev();
+  else if (e.key === 'ArrowRight')          goNext();
+  else if (e.key === 't' || e.key === 'T')  goToday();
+});
+
+/* ---------- Week nav ---------- */
+document.getElementById('weekPrev').addEventListener('click', goPrev);
+document.getElementById('weekNext').addEventListener('click', goNext);
+document.getElementById('weekToday').addEventListener('click', goToday);
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+
+// Click week label → open hidden date input as picker
+document.getElementById('weekLabel').addEventListener('click', () => {
+  const inp = document.getElementById('weekDateJump');
+  inp.value = fmtISO(currentWeekStart);
+  // Position the (visually hidden) input near the label so the native picker appears nearby
+  const rect = document.getElementById('weekLabel').getBoundingClientRect();
+  inp.style.left = (rect.left + window.scrollX) + 'px';
+  inp.style.top = (rect.bottom + window.scrollY) + 'px';
+  inp.style.opacity = '0';
+  inp.style.pointerEvents = 'auto';
+  if (typeof inp.showPicker === 'function') {
+    try { inp.showPicker(); } catch (_) { inp.focus(); inp.click(); }
+  } else {
+    inp.focus(); inp.click();
+  }
+});
+document.getElementById('weekDateJump').addEventListener('change', e => {
+  jumpToDate(e.target.value);
+});
+
+document.getElementById('copyWeekBtn').addEventListener('click', copyWeekToNext);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+/* ---------- Export / Import ---------- */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  a.href = url;
+  a.download = `teacher-planner-${fmtISO(d)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Exported planner JSON', { kind: 'success' });
+});
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      // schema sanity check
+      if (typeof imported !== 'object' || imported === null) throw new Error('File is not a JSON object.');
+      if (!imported.settings || typeof imported.settings !== 'object') throw new Error('Missing "settings".');
+      if (!Array.isArray(imported.settings.periods)) throw new Error('Missing "settings.periods" array.');
+      if (!Array.isArray(imported.settings.classes)) throw new Error('Missing "settings.classes" array.');
+      if (!Array.isArray(imported.tasks)) throw new Error('Missing "tasks" array.');
+      if (imported.lessons && typeof imported.lessons !== 'object') throw new Error('"lessons" must be an object.');
+      // backfill optional bits
+      imported.settings.recurring = imported.settings.recurring || {};
+      imported.lessons = imported.lessons || {};
+
+      if (!confirm('Replace your current planner data with the imported file?')) return;
+      // snapshot for undo
+      const prev = JSON.parse(JSON.stringify(state));
+      commit(() => {
+        state = imported;
+        sortPeriodsChronologically();
+      }, { tasks: true });
+      toast('Import complete', {
+        kind: 'success',
+        undo: true,
+        onUndo() {
+          commit(() => { state = prev; }, { tasks: true });
+        },
+      });
+    } catch (err) {
+      toast('Import failed: ' + err.message, { kind: 'error', duration: 4000 });
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ---------- Utilities ---------- */
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/"/g,'&quot;');
+}
+
+/* ---------- Boot ---------- */
+load();
+sortPeriodsChronologically();
+
+// Seed sample recurring schedule on first run for a more useful first impression
+if (Object.keys(state.settings.recurring).length === 0 && !localStorage.getItem(SEEDED_KEY)) {
+  const r = {};
+  // simple alternating pattern across the week
+  state.settings.periods.forEach((p, idx) => {
+    r[p.id] = [0,1,2,3,4].map(d => {
+      const cls = state.settings.classes[(idx + d) % state.settings.classes.length];
+      return cls ? cls.id : null;
+    });
+  });
+  state.settings.recurring = r;
+  localStorage.setItem(SEEDED_KEY, '1');
+  save();
+}
+
+renderSchedule();
+renderTasks();
+populateClassSelect(document.getElementById('newTaskClass'), '');
+initBackupFile();
 </script>
 </body>
 </html>
